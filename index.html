@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Mon Système"/>
+  <meta name="theme-color" content="#D97706"/>
+  <title>Mon Système ⚡</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { background:#FAF9F7; font-family:system-ui,-apple-system,sans-serif; }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.storage = {
+      set: async (key, value) => { localStorage.setItem(key, value); return { key, value }; },
+      get: async (key) => {
+        const value = localStorage.getItem(key);
+        if (value === null) throw new Error('Key not found: ' + key);
+        return { key, value };
+      },
+      delete: async (key) => { localStorage.removeItem(key); return { key, deleted: true }; },
+      list: async (prefix) => {
+        prefix = prefix || '';
+        const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
+        return { keys, prefix };
+      }
+    };
+  </script>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+
+const C = {
+  bg:"#FAF9F7", surface:"#FFFFFF", surface2:"#F5F3F0", border:"#E7E4DF",
+  text:"#1C1917", muted:"#78716C", faint:"#A8A29E",
+  accent:"#D97706", accentSoft:"#D9770615",
+  sport:"#2563EB", nutri:"#EA580C", lecture:"#7C3AED", epargne:"#16A34A",
+  good:"#16A34A", warn:"#D97706", danger:"#DC2626",
+};
+
+const DAYS      = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+const FULL_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+
+const PILLARS = [
+  { id:"sport",     label:"Sport",      icon:"⚡", color:C.sport,    unit:"séance",    target:6, slots:["matin","soir"], types:["Crossfit","Trail","Rugby","Autre"], tip:"Trail Lun(midi)+Mar(av8h)+Jeu(av8h) · Crossfit Mer+Ven(midi)+Dim(av8h) · Rugby Lun soir." },
+  { id:"nutrition", label:"Nutrition",  icon:"🎯", color:C.nutri,    unit:"jour clean", target:6, slots:["matin","midi","soir"], tip:"6 jours propres/7 = perte de poids durable sans frustration." },
+  { id:"sobriete",  label:"Sobriété",   icon:"🚭", color:"#E11D48",  unit:"jour clean", target:7, slots:["no-cig","no-alc"], tip:"Sans cigarette ni alcool = récupération, sommeil et énergie au max." },
+  { id:"yoga",      label:"Yoga",       icon:"🧘", color:"#0891B2",  unit:"séance",    target:5, slots:["fait"], tip:"Lun+Mar+Jeu+Ven+Dim soir après le travail. 30 min = flexibilité et récupération." },
+  { id:"meditation",label:"Méditation", icon:"🌿", color:"#059669",  unit:"session",   target:5, slots:["fait"], tip:"Lun+Mar+Jeu+Ven+Dim. 20 min = meilleure concentration et récupération." },
+  { id:"lecture",   label:"Lecture",    icon:"📖", color:C.lecture,  unit:"session",   target:6, slots:["lu"],  tip:"Lun+Mar+Mer+Jeu+Ven+Sam en soirée. 30–60 min = 12 livres/an minimum." },
+  { id:"langue",    label:"Langue",     icon:"🗣️", color:"#C026D3",  unit:"session",   target:5, slots:["fait"], tip:"Mar+Mer+Jeu+Sam+Dim. 15 min/jour d'espagnol = niveau B2 en 18 mois." },
+  { id:"poker",     label:"Poker",      icon:"♠️", color:"#B45309",  unit:"session",   target:3, slots:["fait"], tip:"Mer+Ven+Dim. 3 sessions/sem = amélioration continue du jeu et bankroll." },
+  { id:"epargne",   label:"Épargne",    icon:"💎", color:C.epargne,  unit:"action",    target:1, slots:["done"], tip:"Pour Surf et Voile 🏄‍♂️⛵ — 500€/mois." },
+];
+
+const SCHEDULE = [
+  { time:"06:00–07:00", label:"Sport / Marche",     slot:"matin", pillar:"sport" },
+  { time:"07:00–07:20", label:"Lecture",             slot:"matin", pillar:"lecture" },
+  { time:"07:20–07:40", label:"Petit-déj clean",    slot:"matin", pillar:"nutrition" },
+  { time:"19:00–19:30", label:"Sport ou mobilité",  slot:"soir",  pillar:"sport", optional:true },
+  { time:"20:00–20:20", label:"Lecture (suite)",    slot:"soir",  pillar:"lecture" },
+  { time:"21:00–21:15", label:"Bilan finances",     slot:"soir",  pillar:"epargne" },
+  { time:"21:15–21:30", label:"Repas / bilan nutri",slot:"soir",  pillar:"nutrition" },
+];
+
+const DAY_SCHEDULE = {
+  // LUNDI — Télétravail
+  0: { type:"Télétravail 🏠", color:"#2563EB", note:"Trail sur la pause déj. Récupération Constance. Rugby + Yoga + Lecture en soirée.",
+    blocs:[
+      {time:"Av 8h",     label:"Constance / famille", pillar:null,                 icon:"👨‍👧"},
+      {time:"08h–12h",   label:"Travail (Accenture / Michelin)", pillar:null,       icon:"💻"},
+      {time:"12h–14h",   label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"14h–17h",   label:"Travail", pillar:null,                              icon:"💻"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Rugby toucher 🏉", pillar:"sport",                  icon:"🏉"},
+      {time:"21h–22h30", label:"Yoga 30min + Méditation 20min + Lecture", pillar:"yoga", icon:"🧘"},
+    ]},
+
+  // MARDI — Sur site
+  1: { type:"Sur site 🏢", color:"#7C3AED", note:"Trail avant 8h. Récupération Constance 17h. Yoga + méditation + langue + lecture en soirée.",
+    blocs:[
+      {time:"Av 8h",     label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
+    ]},
+
+  // MERCREDI — Sur site (Constance chez beaux-parents)
+  2: { type:"Sur site 🏢 — Constance chez beaux-parents", color:"#059669", note:"Constance prise en charge le matin. Crossfit 17h-19h. Langue + poker + lecture en soirée.",
+    blocs:[
+      {time:"Av 8h",     label:"Constance / famille (beaux-parents)", pillar:null,  icon:"👨‍👧"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"19h–21h",   label:"Langue — espagnol 15min", pillar:"langue",         icon:"🗣️"},
+      {time:"21h–22h30", label:"Poker 45min + Lecture", pillar:"poker",            icon:"♠️"},
+    ]},
+
+  // JEUDI — Sur site
+  3: { type:"Sur site 🏢", color:"#EA580C", note:"Trail avant 8h. Récupération Constance 17h. Yoga + méditation + langue + lecture en soirée.",
+    blocs:[
+      {time:"Av 8h",     label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
+    ]},
+
+  // VENDREDI — Télétravail (Madeline s'occupe de Constance)
+  4: { type:"Télétravail 🏠 — Madeline s'occupe de Constance", color:"#D97706", note:"Constance avec Madeline le matin. Crossfit sur la pause déj. Promenade 17h. Yoga + Poker en soirée.",
+    blocs:[
+      {time:"Av 8h",     label:"Constance avec Madeline", pillar:null,             icon:"👨‍👧"},
+      {time:"08h–12h",   label:"Travail (Accenture / Michelin)", pillar:null,       icon:"💻"},
+      {time:"12h–14h",   label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"14h–17h",   label:"Travail", pillar:null,                              icon:"💻"},
+      {time:"17h–19h",   label:"Promenade Linette 🐕", pillar:null,                icon:"🐕"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min", pillar:"yoga",     icon:"🧘"},
+      {time:"21h–22h30", label:"Poker 45–60min", pillar:"poker",                   icon:"♠️"},
+    ]},
+
+  // SAMEDI
+  5: { type:"Week-end 🌅", color:"#0891B2", note:"Langue fin d'après-midi. Lecture en soirée. Journée famille.",
+    blocs:[
+      {time:"08h–12h",   label:"Matinée libre — famille / repos", pillar:null,     icon:"🏠"},
+      {time:"12h–14h",   label:"Déjeuner famille", pillar:"nutrition",             icon:"🥗"},
+      {time:"14h–17h",   label:"Temps famille / promenade Linette", pillar:null,   icon:"🏠"},
+      {time:"17h–19h",   label:"Langue — espagnol 🗣️", pillar:"langue",            icon:"🗣️"},
+      {time:"19h–21h",   label:"Temps libre / famille", pillar:null,               icon:"🏠"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
+    ]},
+
+  // DIMANCHE
+  6: { type:"Récupération 🌿", color:"#059669", note:"Crossfit le matin. Poker 17h. Yoga + méditation + langue 19h. Cinéma + pizza en soirée 🍕",
+    blocs:[
+      {time:"Av 8h",     label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"08h–12h",   label:"Matinée famille / grasse mat'", pillar:null,       icon:"🏠"},
+      {time:"12h–14h",   label:"Déjeuner en famille", pillar:"nutrition",           icon:"🥗"},
+      {time:"14h–17h",   label:"Temps famille / repos", pillar:null,                icon:"🏠"},
+      {time:"17h–19h",   label:"Poker ♠️", pillar:"poker",                         icon:"♠️"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"🎬 Cinéma + 🍕 Pizza maison", pillar:null,         icon:"🍕"},
+    ]},
+};
+const QUOTES = [
+  "La régularité bat le talent. Toujours.",
+  "Tu n'as pas besoin de te sentir motivé. Tu as besoin d'agir.",
+  "Une mauvaise séance vaut mieux qu'aucune séance.",
+  "Le système gagne sur la volonté. Construis le système.",
+  "Chaque case cochée prouve que tu tiens tes engagements.",
+];
+
+const MACROS_TARGET = { kcal:1700, proteines:150, glucides:160, lipides:50 };
+
+const MEALS = {
+  matin:{ label:"Petit-déjeuner", icon:"☀️", time:"07:00", color:"#D97706",
+    options:[
+      { nom:"Option A — Protéiné classique", aliments:[
+        {nom:"Flocons d'avoine",qte:"60g",kcal:220,p:7,g:38,l:4},
+        {nom:"Œufs entiers",qte:"2",kcal:140,p:12,g:1,l:10},
+        {nom:"Blanc d'œuf",qte:"2",kcal:34,p:8,g:0,l:0},
+        {nom:"Fruits rouges",qte:"80g",kcal:30,p:0,g:7,l:0},
+      ]},
+      { nom:"Option B — Rapide (< 5 min)", aliments:[
+        {nom:"Skyr nature",qte:"200g",kcal:120,p:20,g:8,l:0},
+        {nom:"Banane",qte:"1 moyenne",kcal:90,p:1,g:23,l:0},
+        {nom:"Amandes",qte:"15g",kcal:90,p:3,g:2,l:8},
+      ]},
+      { nom:"Option C — Pancakes protéinés", aliments:[
+        {nom:"Flocons d'avoine mixés",qte:"80g",kcal:290,p:10,g:50,l:5},
+        {nom:"Œuf entier",qte:"1",kcal:70,p:6,g:0,l:5},
+        {nom:"Skyr",qte:"100g",kcal:60,p:10,g:4,l:0},
+        {nom:"Miel",qte:"1 c.à.c",kcal:25,p:0,g:6,l:0},
+      ]},
+      { nom:"Option D — Bowl méditerranéen", aliments:[
+        {nom:"Pain complet",qte:"2 tranches",kcal:140,p:6,g:26,l:2},
+        {nom:"Œufs brouillés",qte:"3",kcal:210,p:18,g:1,l:15},
+        {nom:"Tomates cerises",qte:"80g",kcal:16,p:1,g:3,l:0},
+        {nom:"Feta émiettée",qte:"20g",kcal:50,p:3,g:0,l:4},
+      ]},
+    ]},
+  midi:{ label:"Déjeuner", icon:"🥗", time:"12:30", color:"#EA580C",
+    options:[
+      { nom:"Option A — Complet équilibré", aliments:[
+        {nom:"Poulet grillé",qte:"150g",kcal:165,p:31,g:0,l:4},
+        {nom:"Riz basmati",qte:"120g cuit",kcal:156,p:3,g:34,l:0},
+        {nom:"Brocolis vapeur",qte:"200g",kcal:68,p:6,g:10,l:0},
+        {nom:"Huile d'olive",qte:"1 c. à soupe",kcal:90,p:0,g:0,l:10},
+      ]},
+      { nom:"Option B — Batch cooking rapide", aliments:[
+        {nom:"Thon naturel",qte:"130g",kcal:130,p:29,g:0,l:1},
+        {nom:"Pâtes complètes",qte:"150g cuites",kcal:210,p:7,g:42,l:1},
+        {nom:"Tomates cerises",qte:"100g",kcal:20,p:1,g:4,l:0},
+        {nom:"Feta",qte:"30g",kcal:75,p:4,g:1,l:6},
+      ]},
+      { nom:"Option C — Buddha bowl", aliments:[
+        {nom:"Quinoa cuit",qte:"150g",kcal:180,p:7,g:32,l:3},
+        {nom:"Pois chiches rôtis",qte:"80g",kcal:130,p:7,g:20,l:3},
+        {nom:"Avocat",qte:"½",kcal:120,p:1,g:6,l:11},
+        {nom:"Légumes grillés",qte:"150g",kcal:60,p:2,g:10,l:1},
+      ]},
+      { nom:"Option D — Wrap protéiné", aliments:[
+        {nom:"Tortilla complète",qte:"1",kcal:120,p:4,g:20,l:3},
+        {nom:"Dinde tranchée",qte:"100g",kcal:110,p:22,g:0,l:2},
+        {nom:"Fromage blanc 0%",qte:"50g",kcal:25,p:4,g:2,l:0},
+        {nom:"Crudités mélangées",qte:"100g",kcal:25,p:1,g:5,l:0},
+      ]},
+    ]},
+  collation:{ label:"Collation", icon:"⚡", time:"16:30", color:"#2563EB",
+    options:[
+      { nom:"Option A — Pré-workout", aliments:[
+        {nom:"Fromage blanc 0%",qte:"150g",kcal:75,p:13,g:5,l:0},
+        {nom:"Banane",qte:"1 petite",kcal:70,p:1,g:18,l:0},
+      ]},
+      { nom:"Option B — Légère", aliments:[
+        {nom:"Œufs durs",qte:"2",kcal:140,p:12,g:1,l:10},
+        {nom:"Concombre",qte:"libre",kcal:15,p:1,g:2,l:0},
+      ]},
+      { nom:"Option C — Énergétique", aliments:[
+        {nom:"Skyr fruits rouges",qte:"150g",kcal:90,p:13,g:9,l:0},
+        {nom:"Noix de cajou",qte:"20g",kcal:115,p:4,g:6,l:9},
+      ]},
+      { nom:"Option D — Express", aliments:[
+        {nom:"Shake protéiné",qte:"1 dose",kcal:120,p:25,g:5,l:2},
+        {nom:"Pomme",qte:"1",kcal:70,p:0,g:18,l:0},
+      ]},
+    ]},
+  soir:{ label:"Dîner", icon:"🌙", time:"20:00", color:"#7C3AED",
+    options:[
+      { nom:"Option A — Digeste & protéiné", aliments:[
+        {nom:"Saumon vapeur",qte:"130g",kcal:260,p:26,g:0,l:17},
+        {nom:"Patate douce",qte:"150g rôtie",kcal:130,p:2,g:30,l:0},
+        {nom:"Salade verte",qte:"libre",kcal:15,p:1,g:2,l:0},
+      ]},
+      { nom:"Option B — Léger (sans sport)", aliments:[
+        {nom:"Omelette",qte:"3 œufs",kcal:210,p:18,g:1,l:15},
+        {nom:"Légumes poêlés",qte:"200g",kcal:60,p:3,g:10,l:1},
+        {nom:"Pain complet",qte:"1 tranche",kcal:70,p:3,g:13,l:1},
+      ]},
+      { nom:"Option C — Poisson blanc", aliments:[
+        {nom:"Cabillaud au four",qte:"150g",kcal:130,p:28,g:0,l:1},
+        {nom:"Riz complet",qte:"100g cuit",kcal:130,p:3,g:28,l:1},
+        {nom:"Haricots verts",qte:"200g",kcal:50,p:3,g:8,l:0},
+      ]},
+      { nom:"Option D — Bowl protéiné", aliments:[
+        {nom:"Dinde hachée",qte:"150g",kcal:165,p:30,g:0,l:4},
+        {nom:"Lentilles corail",qte:"100g cuites",kcal:115,p:9,g:20,l:0},
+        {nom:"Épinards poêlés",qte:"150g",kcal:35,p:4,g:3,l:0},
+        {nom:"Huile de coco",qte:"½ c.à.s",kcal:45,p:0,g:0,l:5},
+      ]},
+    ]},
+};
+
+const MACRO_ROLES = [
+  { macro:"Protéines", icon:"🥩", color:"#EA580C", kcalPg:4,
+    role:"Construisent et réparent les muscles, fabriquent les enzymes et hormones, rassasient durablement. Indispensables en déficit calorique pour préserver la masse musculaire.",
+    sources:["Poulet / dinde","Œufs & blancs d'œufs","Thon / saumon","Skyr / fromage blanc 0%","Steak 5% MG","Crevettes"],
+    tip:"Vise 1,6–2 g / kg de poids corporel. Répartis sur 3–4 repas.",
+  },
+  { macro:"Glucides", icon:"🌾", color:"#2563EB", kcalPg:4,
+    role:"Carburant principal du cerveau et des muscles. Les glucides complexes libèrent l'énergie lentement et évitent les pics d'insuline. À privilégier avant et après le sport.",
+    sources:["Flocons d'avoine","Riz basmati / complet","Patate douce","Quinoa","Pâtes complètes","Fruits (banane, fruits rouges)"],
+    tip:"Réduis après 20h. Augmente de ~150 kcal les jours de salle.",
+  },
+  { macro:"Lipides", icon:"🥑", color:"#7C3AED", kcalPg:9,
+    role:"Essentiels à la production d'hormones (dont testostérone), à l'absorption des vitamines A/D/E/K et à la santé des articulations. Ne pas éliminer, choisir les bonnes sources.",
+    sources:["Huile d'olive","Avocat","Saumon / sardines","Amandes / noix","Œufs entiers","Beurre de noix"],
+    tip:"Favorise les oméga-3 (poissons gras, noix). Évite les graisses trans (plats industriels).",
+  },
+];
+
+const NUTRI_RULES = [
+  {icon:"💧",title:"2 L d'eau/jour",desc:"500 ml au réveil avant de manger. L'hydratation active le métabolisme."},
+  {icon:"⏰",title:"Pas de glucides après 20h",desc:"Protéines + légumes le soir. Les glucides tardifs = énergie stockée non utilisée."},
+  {icon:"🔁",title:"Règle du 80/20",desc:"80% du temps ce plan, 20% de souplesse. Un repas raté ne détruit pas la semaine."},
+  {icon:"🚫",title:"Élimine ces 4 items",desc:"Alcool, sodas, pain blanc, sauces industrielles = ~400 kcal cachées/jour en moyenne."},
+  {icon:"⚡",title:"Jour de salle : +150 kcal",desc:"Ajoute des glucides complexes au déjeuner. La récupération fait partie du plan."},
+];
+
+const INGREDIENTS_DB = [
+  // ── Viandes ──
+  {nom:"Poulet (blanc)",cat:"Viandes",qte:"100g",kcal:110,p:23,g:0,l:1},
+  {nom:"Poulet (cuisse)",cat:"Viandes",qte:"100g",kcal:177,p:18,g:0,l:11},
+  {nom:"Poulet (aile)",cat:"Viandes",qte:"100g",kcal:203,p:19,g:0,l:14},
+  {nom:"Poulet rôti (avec peau)",cat:"Viandes",qte:"100g",kcal:215,p:22,g:0,l:14},
+  {nom:"Dinde (blanc)",cat:"Viandes",qte:"100g",kcal:104,p:22,g:0,l:1},
+  {nom:"Dinde (cuisse)",cat:"Viandes",qte:"100g",kcal:144,p:20,g:0,l:7},
+  {nom:"Dinde hachée",cat:"Viandes",qte:"100g",kcal:132,p:20,g:0,l:5},
+  {nom:"Bœuf haché 5%",cat:"Viandes",qte:"100g",kcal:137,p:21,g:0,l:5},
+  {nom:"Bœuf haché 15%",cat:"Viandes",qte:"100g",kcal:215,p:17,g:0,l:15},
+  {nom:"Bœuf haché 20%",cat:"Viandes",qte:"100g",kcal:254,p:16,g:0,l:21},
+  {nom:"Steak bœuf",cat:"Viandes",qte:"100g",kcal:158,p:26,g:0,l:6},
+  {nom:"Entrecôte",cat:"Viandes",qte:"100g",kcal:245,p:19,g:0,l:18},
+  {nom:"Filet de bœuf",cat:"Viandes",qte:"100g",kcal:172,p:22,g:0,l:9},
+  {nom:"Côte de porc",cat:"Viandes",qte:"100g",kcal:185,p:22,g:0,l:11},
+  {nom:"Filet de porc",cat:"Viandes",qte:"100g",kcal:143,p:22,g:0,l:6},
+  {nom:"Porc haché",cat:"Viandes",qte:"100g",kcal:237,p:16,g:0,l:19},
+  {nom:"Lardons nature",cat:"Viandes",qte:"100g",kcal:330,p:15,g:0,l:30},
+  {nom:"Jambon blanc",cat:"Viandes",qte:"100g",kcal:107,p:18,g:1,l:3},
+  {nom:"Jambon cru",cat:"Viandes",qte:"100g",kcal:145,p:22,g:0,l:6},
+  {nom:"Jambon de Bayonne",cat:"Viandes",qte:"100g",kcal:150,p:23,g:0,l:6},
+  {nom:"Bacon",cat:"Viandes",qte:"100g",kcal:417,p:12,g:0,l:42},
+  {nom:"Saucisse de Francfort",cat:"Viandes",qte:"100g",kcal:290,p:13,g:2,l:26},
+  {nom:"Merguez",cat:"Viandes",qte:"100g",kcal:295,p:17,g:1,l:25},
+  {nom:"Chipolata",cat:"Viandes",qte:"100g",kcal:280,p:15,g:2,l:24},
+  {nom:"Agneau (gigot)",cat:"Viandes",qte:"100g",kcal:191,p:24,g:0,l:10},
+  {nom:"Agneau (côtelette)",cat:"Viandes",qte:"100g",kcal:277,p:17,g:0,l:23},
+  {nom:"Lapin",cat:"Viandes",qte:"100g",kcal:136,p:21,g:0,l:5},
+  {nom:"Veau (escalope)",cat:"Viandes",qte:"100g",kcal:105,p:19,g:0,l:3},
+  {nom:"Canard (magret)",cat:"Viandes",qte:"100g",kcal:158,p:20,g:0,l:8},
+  {nom:"Canard (confit)",cat:"Viandes",qte:"100g",kcal:337,p:20,g:0,l:28},
+  {nom:"Foie de veau",cat:"Viandes",qte:"100g",kcal:140,p:20,g:3,l:5},
+  {nom:"Foie de poulet",cat:"Viandes",qte:"100g",kcal:119,p:18,g:1,l:4},
+  {nom:"Chorizo",cat:"Viandes",qte:"100g",kcal:455,p:24,g:2,l:38},
+  {nom:"Saucisson sec",cat:"Viandes",qte:"100g",kcal:452,p:22,g:2,l:39},
+  // ── Poissons ──
+  {nom:"Saumon (frais)",cat:"Poissons",qte:"100g",kcal:200,p:20,g:0,l:13},
+  {nom:"Saumon fumé",cat:"Poissons",qte:"100g",kcal:179,p:25,g:0,l:9},
+  {nom:"Thon naturel (boîte)",cat:"Poissons",qte:"100g",kcal:100,p:23,g:0,l:1},
+  {nom:"Thon à l'huile (boîte)",cat:"Poissons",qte:"100g",kcal:190,p:22,g:0,l:11},
+  {nom:"Cabillaud",cat:"Poissons",qte:"100g",kcal:82,p:18,g:0,l:1},
+  {nom:"Lieu noir",cat:"Poissons",qte:"100g",kcal:91,p:17,g:0,l:2},
+  {nom:"Merlan",cat:"Poissons",qte:"100g",kcal:82,p:17,g:0,l:1},
+  {nom:"Sole",cat:"Poissons",qte:"100g",kcal:83,p:18,g:0,l:1},
+  {nom:"Dorade",cat:"Poissons",qte:"100g",kcal:96,p:18,g:0,l:3},
+  {nom:"Bar / loup",cat:"Poissons",qte:"100g",kcal:97,p:18,g:0,l:3},
+  {nom:"Truite",cat:"Poissons",qte:"100g",kcal:149,p:21,g:0,l:7},
+  {nom:"Sardines (fraîches)",cat:"Poissons",qte:"100g",kcal:208,p:25,g:0,l:11},
+  {nom:"Maquereau (frais)",cat:"Poissons",qte:"100g",kcal:205,p:19,g:0,l:14},
+  {nom:"Maquereau (boîte)",cat:"Poissons",qte:"100g",kcal:180,p:18,g:0,l:12},
+  {nom:"Hareng",cat:"Poissons",qte:"100g",kcal:158,p:18,g:0,l:9},
+  {nom:"Anchois",cat:"Poissons",qte:"100g",kcal:131,p:20,g:0,l:5},
+  {nom:"Crevettes",cat:"Poissons",qte:"100g",kcal:85,p:18,g:1,l:1},
+  {nom:"Moules",cat:"Poissons",qte:"100g",kcal:86,p:12,g:4,l:2},
+  {nom:"Huitres",cat:"Poissons",qte:"100g",kcal:69,p:9,g:4,l:2},
+  {nom:"Calamars",cat:"Poissons",qte:"100g",kcal:92,p:16,g:3,l:1},
+  {nom:"Crevettes géantes",cat:"Poissons",qte:"100g",kcal:99,p:21,g:0,l:1},
+  {nom:"Noix de Saint-Jacques",cat:"Poissons",qte:"100g",kcal:88,p:17,g:3,l:1},
+  {nom:"Crabe",cat:"Poissons",qte:"100g",kcal:83,p:18,g:0,l:1},
+  {nom:"Surimi",cat:"Poissons",qte:"100g",kcal:99,p:12,g:10,l:1},
+  // ── Œufs & Laitiers ──
+  {nom:"Œuf entier",cat:"Œufs & Laitiers",qte:"1 (60g)",kcal:74,p:6,g:0,l:5},
+  {nom:"Blanc d'œuf",cat:"Œufs & Laitiers",qte:"1",kcal:17,p:4,g:0,l:0},
+  {nom:"Jaune d'œuf",cat:"Œufs & Laitiers",qte:"1",kcal:55,p:3,g:0,l:5},
+  {nom:"Skyr nature",cat:"Œufs & Laitiers",qte:"100g",kcal:60,p:10,g:4,l:0},
+  {nom:"Fromage blanc 0%",cat:"Œufs & Laitiers",qte:"100g",kcal:50,p:8,g:4,l:0},
+  {nom:"Fromage blanc 20%",cat:"Œufs & Laitiers",qte:"100g",kcal:93,p:7,g:4,l:6},
+  {nom:"Yaourt grec 0%",cat:"Œufs & Laitiers",qte:"100g",kcal:59,p:10,g:4,l:0},
+  {nom:"Yaourt grec entier",cat:"Œufs & Laitiers",qte:"100g",kcal:115,p:9,g:4,l:7},
+  {nom:"Yaourt nature",cat:"Œufs & Laitiers",qte:"100g",kcal:61,p:4,g:5,l:3},
+  {nom:"Cottage cheese",cat:"Œufs & Laitiers",qte:"100g",kcal:84,p:11,g:3,l:4},
+  {nom:"Lait écrémé",cat:"Œufs & Laitiers",qte:"100ml",kcal:34,p:3,g:5,l:0},
+  {nom:"Lait demi-écrémé",cat:"Œufs & Laitiers",qte:"100ml",kcal:46,p:3,g:5,l:2},
+  {nom:"Lait entier",cat:"Œufs & Laitiers",qte:"100ml",kcal:64,p:3,g:5,l:4},
+  {nom:"Crème fraîche 15%",cat:"Œufs & Laitiers",qte:"100g",kcal:163,p:3,g:4,l:15},
+  {nom:"Crème fraîche 30%",cat:"Œufs & Laitiers",qte:"100g",kcal:292,p:2,g:3,l:30},
+  {nom:"Beurre doux",cat:"Œufs & Laitiers",qte:"10g",kcal:74,p:0,g:0,l:8},
+  {nom:"Feta",cat:"Œufs & Laitiers",qte:"100g",kcal:264,p:14,g:4,l:21},
+  {nom:"Mozzarella",cat:"Œufs & Laitiers",qte:"100g",kcal:280,p:18,g:2,l:22},
+  {nom:"Emmental",cat:"Œufs & Laitiers",qte:"100g",kcal:382,p:29,g:0,l:29},
+  {nom:"Gruyère",cat:"Œufs & Laitiers",qte:"100g",kcal:393,p:27,g:0,l:31},
+  {nom:"Parmesan",cat:"Œufs & Laitiers",qte:"100g",kcal:431,p:38,g:0,l:29},
+  {nom:"Camembert",cat:"Œufs & Laitiers",qte:"100g",kcal:299,p:20,g:0,l:24},
+  {nom:"Comté",cat:"Œufs & Laitiers",qte:"100g",kcal:409,p:27,g:0,l:33},
+  {nom:"Ricotta",cat:"Œufs & Laitiers",qte:"100g",kcal:174,p:11,g:3,l:13},
+  {nom:"Mascarpone",cat:"Œufs & Laitiers",qte:"100g",kcal:429,p:5,g:4,l:44},
+  {nom:"Philadelphia nature",cat:"Œufs & Laitiers",qte:"100g",kcal:249,p:6,g:4,l:24},
+  {nom:"Kéfir nature",cat:"Œufs & Laitiers",qte:"200ml",kcal:82,p:6,g:8,l:2},
+  // ── Féculents ──
+  {nom:"Riz basmati cuit",cat:"Féculents",qte:"100g",kcal:130,p:3,g:28,l:0},
+  {nom:"Riz complet cuit",cat:"Féculents",qte:"100g",kcal:130,p:3,g:27,l:1},
+  {nom:"Riz jasmin cuit",cat:"Féculents",qte:"100g",kcal:135,p:3,g:29,l:0},
+  {nom:"Riz sauvage cuit",cat:"Féculents",qte:"100g",kcal:101,p:4,g:21,l:0},
+  {nom:"Pâtes blanches cuites",cat:"Féculents",qte:"100g",kcal:157,p:6,g:31,l:1},
+  {nom:"Pâtes complètes cuites",cat:"Féculents",qte:"100g",kcal:140,p:5,g:28,l:1},
+  {nom:"Spaghettis cuits",cat:"Féculents",qte:"100g",kcal:157,p:6,g:31,l:1},
+  {nom:"Pâtes de riz cuites",cat:"Féculents",qte:"100g",kcal:109,p:2,g:25,l:0},
+  {nom:"Quinoa cuit",cat:"Féculents",qte:"100g",kcal:120,p:4,g:21,l:2},
+  {nom:"Patate douce",cat:"Féculents",qte:"100g",kcal:86,p:2,g:20,l:0},
+  {nom:"Pomme de terre",cat:"Féculents",qte:"100g",kcal:77,p:2,g:17,l:0},
+  {nom:"Flocons d'avoine",cat:"Féculents",qte:"100g",kcal:367,p:13,g:62,l:7},
+  {nom:"Pain complet",cat:"Féculents",qte:"1 tranche (30g)",kcal:75,p:3,g:13,l:1},
+  {nom:"Pain de seigle",cat:"Féculents",qte:"1 tranche (30g)",kcal:65,p:2,g:13,l:1},
+  {nom:"Pain de mie blanc",cat:"Féculents",qte:"1 tranche (25g)",kcal:66,p:2,g:13,l:1},
+  {nom:"Baguette",cat:"Féculents",qte:"100g",kcal:270,p:9,g:55,l:1},
+  {nom:"Tortilla (galette de blé)",cat:"Féculents",qte:"1 (40g)",kcal:130,p:3,g:22,l:3},
+  {nom:"Galette de riz",cat:"Féculents",qte:"1 (9g)",kcal:35,p:1,g:7,l:0},
+  {nom:"Craquotte Wasa",cat:"Féculents",qte:"1 (11g)",kcal:37,p:1,g:8,l:0},
+  {nom:"Muesli sans sucre",cat:"Féculents",qte:"100g",kcal:365,p:10,g:59,l:7},
+  {nom:"Corn flakes",cat:"Féculents",qte:"100g",kcal:370,p:7,g:84,l:1},
+  {nom:"Son d'avoine",cat:"Féculents",qte:"100g",kcal:246,p:17,g:58,l:7},
+  {nom:"Lentilles cuites",cat:"Féculents",qte:"100g",kcal:116,p:9,g:20,l:0},
+  {nom:"Lentilles corail cuites",cat:"Féculents",qte:"100g",kcal:113,p:9,g:20,l:0},
+  {nom:"Pois chiches cuits",cat:"Féculents",qte:"100g",kcal:164,p:9,g:27,l:3},
+  {nom:"Haricots rouges cuits",cat:"Féculents",qte:"100g",kcal:127,p:8,g:22,l:1},
+  {nom:"Haricots blancs cuits",cat:"Féculents",qte:"100g",kcal:139,p:9,g:25,l:1},
+  {nom:"Haricots noirs cuits",cat:"Féculents",qte:"100g",kcal:132,p:9,g:24,l:1},
+  {nom:"Edamame",cat:"Féculents",qte:"100g",kcal:122,p:11,g:10,l:5},
+  {nom:"Boulgour cuit",cat:"Féculents",qte:"100g",kcal:83,p:3,g:18,l:0},
+  {nom:"Semoule cuite",cat:"Féculents",qte:"100g",kcal:112,p:4,g:23,l:0},
+  {nom:"Polenta cuite",cat:"Féculents",qte:"100g",kcal:70,p:2,g:15,l:0},
+  {nom:"Sarrasin cuit",cat:"Féculents",qte:"100g",kcal:92,p:3,g:20,l:1},
+  {nom:"Maïs en grains (boîte)",cat:"Féculents",qte:"100g",kcal:86,p:3,g:19,l:1},
+  // ── Légumes ──
+  {nom:"Brocolis",cat:"Légumes",qte:"100g",kcal:34,p:3,g:5,l:0},
+  {nom:"Épinards (frais)",cat:"Légumes",qte:"100g",kcal:23,p:3,g:2,l:0},
+  {nom:"Tomates",cat:"Légumes",qte:"100g",kcal:18,p:1,g:4,l:0},
+  {nom:"Tomates cerises",cat:"Légumes",qte:"100g",kcal:18,p:1,g:4,l:0},
+  {nom:"Tomates pelées (boîte)",cat:"Légumes",qte:"100g",kcal:20,p:1,g:4,l:0},
+  {nom:"Concombre",cat:"Légumes",qte:"100g",kcal:12,p:1,g:2,l:0},
+  {nom:"Courgette",cat:"Légumes",qte:"100g",kcal:17,p:1,g:3,l:0},
+  {nom:"Poivron rouge",cat:"Légumes",qte:"100g",kcal:31,p:1,g:6,l:0},
+  {nom:"Poivron vert",cat:"Légumes",qte:"100g",kcal:20,p:1,g:4,l:0},
+  {nom:"Poivron jaune",cat:"Légumes",qte:"100g",kcal:27,p:1,g:6,l:0},
+  {nom:"Haricots verts",cat:"Légumes",qte:"100g",kcal:31,p:2,g:6,l:0},
+  {nom:"Carottes",cat:"Légumes",qte:"100g",kcal:41,p:1,g:10,l:0},
+  {nom:"Chou-fleur",cat:"Légumes",qte:"100g",kcal:25,p:2,g:5,l:0},
+  {nom:"Chou blanc",cat:"Légumes",qte:"100g",kcal:25,p:1,g:5,l:0},
+  {nom:"Chou frisé (kale)",cat:"Légumes",qte:"100g",kcal:49,p:4,g:9,l:1},
+  {nom:"Chou de Bruxelles",cat:"Légumes",qte:"100g",kcal:43,p:3,g:9,l:0},
+  {nom:"Salade verte (laitue)",cat:"Légumes",qte:"100g",kcal:15,p:1,g:2,l:0},
+  {nom:"Roquette",cat:"Légumes",qte:"100g",kcal:25,p:3,g:4,l:0},
+  {nom:"Mâche",cat:"Légumes",qte:"100g",kcal:21,p:2,g:4,l:0},
+  {nom:"Champignons de Paris",cat:"Légumes",qte:"100g",kcal:22,p:3,g:3,l:0},
+  {nom:"Champignons shiitake",cat:"Légumes",qte:"100g",kcal:34,p:2,g:7,l:0},
+  {nom:"Avocat",cat:"Légumes",qte:"100g",kcal:160,p:2,g:9,l:15},
+  {nom:"Aubergine",cat:"Légumes",qte:"100g",kcal:25,p:1,g:6,l:0},
+  {nom:"Betterave (cuite)",cat:"Légumes",qte:"100g",kcal:43,p:2,g:10,l:0},
+  {nom:"Céleri branche",cat:"Légumes",qte:"100g",kcal:16,p:1,g:3,l:0},
+  {nom:"Poireau",cat:"Légumes",qte:"100g",kcal:61,p:2,g:14,l:0},
+  {nom:"Asperges",cat:"Légumes",qte:"100g",kcal:20,p:2,g:4,l:0},
+  {nom:"Petits pois",cat:"Légumes",qte:"100g",kcal:81,p:5,g:14,l:0},
+  {nom:"Oignon",cat:"Légumes",qte:"100g",kcal:40,p:1,g:9,l:0},
+  {nom:"Oignon rouge",cat:"Légumes",qte:"100g",kcal:42,p:1,g:10,l:0},
+  {nom:"Échalote",cat:"Légumes",qte:"100g",kcal:72,p:2,g:17,l:0},
+  {nom:"Ail",cat:"Légumes",qte:"100g",kcal:149,p:6,g:33,l:0},
+  {nom:"Gingembre",cat:"Légumes",qte:"100g",kcal:80,p:2,g:18,l:1},
+  {nom:"Radis",cat:"Légumes",qte:"100g",kcal:16,p:1,g:3,l:0},
+  {nom:"Navet",cat:"Légumes",qte:"100g",kcal:28,p:1,g:6,l:0},
+  {nom:"Fenouil",cat:"Légumes",qte:"100g",kcal:31,p:1,g:7,l:0},
+  {nom:"Persil frais",cat:"Légumes",qte:"100g",kcal:36,p:3,g:6,l:1},
+  {nom:"Basilic frais",cat:"Légumes",qte:"100g",kcal:23,p:3,g:3,l:0},
+  {nom:"Coriandre fraîche",cat:"Légumes",qte:"100g",kcal:23,p:2,g:4,l:0},
+  // ── Fruits ──
+  {nom:"Banane",cat:"Fruits",qte:"1 (120g)",kcal:107,p:1,g:27,l:0},
+  {nom:"Pomme",cat:"Fruits",qte:"1 (150g)",kcal:78,p:0,g:21,l:0},
+  {nom:"Poire",cat:"Fruits",qte:"1 (150g)",kcal:85,p:1,g:22,l:0},
+  {nom:"Fruits rouges mélange",cat:"Fruits",qte:"100g",kcal:40,p:1,g:9,l:0},
+  {nom:"Fraises",cat:"Fruits",qte:"100g",kcal:32,p:1,g:8,l:0},
+  {nom:"Framboises",cat:"Fruits",qte:"100g",kcal:52,p:1,g:12,l:1},
+  {nom:"Myrtilles",cat:"Fruits",qte:"100g",kcal:57,p:1,g:14,l:0},
+  {nom:"Orange",cat:"Fruits",qte:"1 (150g)",kcal:70,p:1,g:17,l:0},
+  {nom:"Clémentine",cat:"Fruits",qte:"1 (70g)",kcal:34,p:1,g:8,l:0},
+  {nom:"Kiwi",cat:"Fruits",qte:"1 (80g)",kcal:42,p:1,g:10,l:0},
+  {nom:"Mangue",cat:"Fruits",qte:"100g",kcal:60,p:1,g:15,l:0},
+  {nom:"Ananas",cat:"Fruits",qte:"100g",kcal:50,p:1,g:13,l:0},
+  {nom:"Pastèque",cat:"Fruits",qte:"100g",kcal:30,p:1,g:8,l:0},
+  {nom:"Melon",cat:"Fruits",qte:"100g",kcal:34,p:1,g:8,l:0},
+  {nom:"Raisin",cat:"Fruits",qte:"100g",kcal:69,p:1,g:18,l:0},
+  {nom:"Cerise",cat:"Fruits",qte:"100g",kcal:63,p:1,g:16,l:0},
+  {nom:"Pêche",cat:"Fruits",qte:"1 (150g)",kcal:58,p:1,g:14,l:0},
+  {nom:"Abricot",cat:"Fruits",qte:"100g",kcal:48,p:1,g:11,l:0},
+  {nom:"Citron",cat:"Fruits",qte:"100g",kcal:29,p:1,g:9,l:0},
+  {nom:"Figue fraîche",cat:"Fruits",qte:"100g",kcal:74,p:1,g:19,l:0},
+  {nom:"Datte",cat:"Fruits",qte:"100g",kcal:282,p:2,g:75,l:0},
+  {nom:"Abricot sec",cat:"Fruits",qte:"100g",kcal:241,p:3,g:63,l:0},
+  {nom:"Raisin sec",cat:"Fruits",qte:"100g",kcal:299,p:3,g:79,l:0},
+  {nom:"Grenade",cat:"Fruits",qte:"100g",kcal:83,p:2,g:19,l:1},
+  // ── Graisses ──
+  {nom:"Huile d'olive",cat:"Graisses",qte:"1 c.à.s (15ml)",kcal:135,p:0,g:0,l:15},
+  {nom:"Huile de coco",cat:"Graisses",qte:"1 c.à.s (15ml)",kcal:130,p:0,g:0,l:14},
+  {nom:"Huile de colza",cat:"Graisses",qte:"1 c.à.s (15ml)",kcal:135,p:0,g:0,l:15},
+  {nom:"Ghee",cat:"Graisses",qte:"10g",kcal:90,p:0,g:0,l:10},
+  {nom:"Beurre doux",cat:"Graisses",qte:"10g",kcal:74,p:0,g:0,l:8},
+  {nom:"Amandes",cat:"Graisses",qte:"30g",kcal:174,p:6,g:6,l:15},
+  {nom:"Noix",cat:"Graisses",qte:"30g",kcal:196,p:5,g:4,l:19},
+  {nom:"Noix de cajou",cat:"Graisses",qte:"30g",kcal:164,p:5,g:9,l:13},
+  {nom:"Pistaches",cat:"Graisses",qte:"30g",kcal:172,p:6,g:8,l:14},
+  {nom:"Noisettes",cat:"Graisses",qte:"30g",kcal:188,p:4,g:5,l:18},
+  {nom:"Cacahuètes",cat:"Graisses",qte:"30g",kcal:176,p:8,g:5,l:15},
+  {nom:"Graines de chia",cat:"Graisses",qte:"30g",kcal:146,p:5,g:12,l:9},
+  {nom:"Graines de lin",cat:"Graisses",qte:"30g",kcal:160,p:5,g:9,l:12},
+  {nom:"Graines de courge",cat:"Graisses",qte:"30g",kcal:163,p:9,g:4,l:13},
+  {nom:"Graines de sésame",cat:"Graisses",qte:"30g",kcal:178,p:5,g:7,l:16},
+  {nom:"Beurre d'amande",cat:"Graisses",qte:"1 c.à.s (15g)",kcal:90,p:3,g:3,l:8},
+  {nom:"Beurre de cacahuète",cat:"Graisses",qte:"1 c.à.s (15g)",kcal:90,p:4,g:3,l:8},
+  {nom:"Tahini",cat:"Graisses",qte:"1 c.à.s (15g)",kcal:90,p:3,g:3,l:8},
+  {nom:"Noix de coco râpée",cat:"Graisses",qte:"30g",kcal:187,p:2,g:7,l:18},
+  {nom:"Chocolat noir 70%",cat:"Graisses",qte:"20g",kcal:114,p:2,g:9,l:8},
+  {nom:"Chocolat noir 85%",cat:"Graisses",qte:"20g",kcal:122,p:2,g:7,l:10},
+  // ── Boissons ──
+  {nom:"Eau",cat:"Boissons",qte:"100ml",kcal:0,p:0,g:0,l:0},
+  {nom:"Café noir",cat:"Boissons",qte:"30ml",kcal:2,p:0,g:0,l:0},
+  {nom:"Thé vert",cat:"Boissons",qte:"200ml",kcal:2,p:0,g:0,l:0},
+  {nom:"Thé noir",cat:"Boissons",qte:"200ml",kcal:2,p:0,g:0,l:0},
+  {nom:"Lait végétal amande",cat:"Boissons",qte:"100ml",kcal:24,p:1,g:3,l:1},
+  {nom:"Lait végétal avoine",cat:"Boissons",qte:"100ml",kcal:47,p:1,g:8,l:1},
+  {nom:"Lait végétal soja",cat:"Boissons",qte:"100ml",kcal:40,p:3,g:3,l:2},
+  {nom:"Jus d'orange frais",cat:"Boissons",qte:"200ml",kcal:88,p:1,g:20,l:0},
+  {nom:"Jus de tomate",cat:"Boissons",qte:"200ml",kcal:36,p:2,g:7,l:0},
+  {nom:"Shake protéiné (whey)",cat:"Boissons",qte:"1 dose (30g)",kcal:120,p:24,g:4,l:2},
+  {nom:"Shake caséine",cat:"Boissons",qte:"1 dose (30g)",kcal:115,p:23,g:5,l:1},
+  {nom:"Kombucha",cat:"Boissons",qte:"200ml",kcal:30,p:0,g:7,l:0},
+  {nom:"Boisson isotonique",cat:"Boissons",qte:"500ml",kcal:125,p:0,g:31,l:0},
+  // ── Condiments ──
+  {nom:"Sauce tomate nature",cat:"Condiments",qte:"100g",kcal:35,p:2,g:7,l:0},
+  {nom:"Coulis de tomates",cat:"Condiments",qte:"100g",kcal:38,p:2,g:7,l:0},
+  {nom:"Moutarde de Dijon",cat:"Condiments",qte:"1 c.à.s",kcal:15,p:1,g:1,l:1},
+  {nom:"Ketchup",cat:"Condiments",qte:"1 c.à.s",kcal:17,p:0,g:4,l:0},
+  {nom:"Sauce soja",cat:"Condiments",qte:"1 c.à.s",kcal:9,p:1,g:1,l:0},
+  {nom:"Sauce sriracha",cat:"Condiments",qte:"1 c.à.s",kcal:20,p:0,g:4,l:0},
+  {nom:"Vinaigre de cidre",cat:"Condiments",qte:"1 c.à.s",kcal:3,p:0,g:0,l:0},
+  {nom:"Vinaigre balsamique",cat:"Condiments",qte:"1 c.à.s",kcal:14,p:0,g:3,l:0},
+  {nom:"Miel",cat:"Condiments",qte:"1 c.à.s (15g)",kcal:46,p:0,g:12,l:0},
+  {nom:"Sirop d'agave",cat:"Condiments",qte:"1 c.à.s",kcal:45,p:0,g:12,l:0},
+  {nom:"Sirop d'érable",cat:"Condiments",qte:"1 c.à.s",kcal:40,p:0,g:10,l:0},
+  {nom:"Sauce pesto basilic",cat:"Condiments",qte:"1 c.à.s",kcal:72,p:2,g:1,l:7},
+  {nom:"Houmous",cat:"Condiments",qte:"100g",kcal:177,p:8,g:14,l:10},
+  {nom:"Guacamole",cat:"Condiments",qte:"100g",kcal:150,p:2,g:9,l:13},
+  {nom:"Mayonnaise",cat:"Condiments",qte:"1 c.à.s",kcal:103,p:0,g:0,l:11},
+  {nom:"Mayonnaise allégée",cat:"Condiments",qte:"1 c.à.s",kcal:47,p:0,g:2,l:4},
+  {nom:"Curry en poudre",cat:"Condiments",qte:"1 c.à.c",kcal:10,p:0,g:2,l:0},
+  {nom:"Curcuma",cat:"Condiments",qte:"1 c.à.c",kcal:10,p:0,g:2,l:0},
+  {nom:"Paprika",cat:"Condiments",qte:"1 c.à.c",kcal:9,p:0,g:2,l:0},
+  {nom:"Cannelle",cat:"Condiments",qte:"1 c.à.c",kcal:8,p:0,g:2,l:0},
+  {nom:"Olives noires",cat:"Condiments",qte:"10 olives (30g)",kcal:36,p:0,g:1,l:4},
+  {nom:"Olives vertes",cat:"Condiments",qte:"10 olives (30g)",kcal:39,p:0,g:1,l:4},
+  {nom:"Cornichons",cat:"Condiments",qte:"100g",kcal:15,p:1,g:3,l:0},
+  {nom:"Tapenade",cat:"Condiments",qte:"1 c.à.s",kcal:44,p:0,g:1,l:5},
+];
+const CATS = ["Tout",...[...new Set(INGREDIENTS_DB.map(i=>i.cat))]];
+
+const NutriAbaque = () => {
+  const [search,setSearch] = useState("");
+  const [cat,setCat]       = useState("Tout");
+  const [sort,setSort]     = useState("nom");
+
+  const filtered = INGREDIENTS_DB
+    .filter(i=>(cat==="Tout"||i.cat===cat) && (i.nom.toLowerCase().includes(search.toLowerCase())||i.cat.toLowerCase().includes(search.toLowerCase())))
+    .sort((a,b)=>sort==="nom"?a.nom.localeCompare(b.nom):b[sort]-a[sort]);
+
+  const macroBar = (val,max,color) => (
+    <div style={{height:3,background:C.border,borderRadius:2,overflow:"hidden",width:40}}>
+      <div style={{height:"100%",width:`${Math.min(val/max*100,100)}%`,background:color,borderRadius:2}}/>
+    </div>
+  );
+
+  return(
+    <div>
+      {/* Recherche */}
+      <div style={{position:"relative",marginBottom:12}}>
+        <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:C.faint}}>🔍</span>
+        <input
+          placeholder="Rechercher un ingrédient..."
+          value={search} onChange={e=>setSearch(e.target.value)}
+          style={{width:"100%",boxSizing:"border-box",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 12px 10px 36px",color:C.text,fontFamily:"inherit",fontSize:13,outline:"none"}}
+        />
+        {search&&<button onClick={()=>setSearch("")} style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:C.faint,fontSize:16}}>×</button>}
+      </div>
+
+      {/* Catégories */}
+      <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8,marginBottom:12}}>
+        {CATS.map(c=>(
+          <button key={c} onClick={()=>setCat(c)} style={{flexShrink:0,padding:"5px 12px",borderRadius:20,border:`1px solid ${cat===c?C.accent:C.border}`,background:cat===c?C.accent:C.surface,color:cat===c?"#fff":C.muted,fontFamily:"inherit",fontSize:11,fontWeight:cat===c?600:400,cursor:"pointer",transition:"all 0.15s"}}>{c}</button>
+        ))}
+      </div>
+
+      {/* Tri */}
+      <div style={{display:"flex",gap:6,marginBottom:12}}>
+        {[{k:"nom",l:"A→Z"},{k:"kcal",l:"Kcal"},{k:"p",l:"Protéines"},{k:"g",l:"Glucides"},{k:"l",l:"Lipides"}].map(s=>(
+          <button key={s.k} onClick={()=>setSort(s.k)} style={{padding:"4px 10px",borderRadius:8,border:`1px solid ${sort===s.k?C.nutri:C.border}`,background:sort===s.k?`${C.nutri}15`:C.surface,color:sort===s.k?C.nutri:C.faint,fontFamily:"inherit",fontSize:10,fontWeight:sort===s.k?700:400,cursor:"pointer"}}>{s.l}</button>
+        ))}
+      </div>
+
+      {/* Résultats */}
+      <div style={{fontSize:11,color:C.faint,marginBottom:8}}>{filtered.length} ingrédient{filtered.length>1?"s":""}</div>
+      <div style={{maxHeight:400,overflowY:"auto",borderRadius:12,border:`1px solid ${C.border}`}}>
+        {filtered.length===0?(
+          <div style={{padding:"24px",textAlign:"center",color:C.faint,fontSize:12}}>Aucun résultat pour "{search}"</div>
+        ):filtered.map((ing,i)=>(
+          <div key={ing.nom} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:i<filtered.length-1?`1px solid ${C.border}`:"none",background:i%2===0?C.surface:C.surface2}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,fontWeight:500,marginBottom:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ing.nom}</div>
+              <div style={{fontSize:10,color:C.faint}}>{ing.qte} · <span style={{color:C.accent,fontWeight:600}}>{ing.kcal} kcal</span></div>
+            </div>
+            <div style={{display:"flex",gap:10,flexShrink:0}}>
+              {[{v:ing.p,max:30,c:C.nutri,l:"P"},{v:ing.g,max:50,c:C.sport,l:"G"},{v:ing.l,max:20,c:C.lecture,l:"L"}].map(m=>(
+                <div key={m.l} style={{textAlign:"center",minWidth:32}}>
+                  {macroBar(m.v,m.max,m.c)}
+                  <div style={{fontSize:9,color:m.c,fontWeight:600,marginTop:2}}>{m.v}g</div>
+                  <div style={{fontSize:8,color:C.faint}}>{m.l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+
+// ── Storage ────────────────────────────────────────────────────
+const getWeekKey = (offset=0) => {
+  const d=new Date(), mon=new Date(d);
+  mon.setHours(0,0,0,0);
+  mon.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1)-offset*7);
+  return `week_${mon.getFullYear()}_${mon.getMonth()+1}_${mon.getDate()}`;
+};
+const getDayKey = () => { const d=new Date(); return `day_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`; };
+const getYesterdayKey = () => { const d=new Date(); d.setDate(d.getDate()-1); return `day_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`; };
+const save = async (k,v) => { try{await window.storage.set(k,JSON.stringify(v));}catch{} };
+const load = async (k,fb) => { try{const r=await window.storage.get(k);return r?JSON.parse(r.value):fb;}catch{return fb;} };
+
+const computeScores = (checks={}) => {
+  let ok=0,tot=0; const pillars={};
+  PILLARS.forEach(p=>{
+    let po=0,pt=0;
+    DAYS.forEach((_,d)=>{
+      if(p.id==="sport"){
+        pt++;tot++;
+        if(p.types.some(t=>!!checks[`${d}-sport-${t}`])){po++;ok++;}
+      } else {
+        p.slots.forEach(s=>{pt++;tot++;if(!!checks[`${d}-${p.id}-${s}`]){po++;ok++;}});
+      }
+    });
+    pillars[p.id]=pt?Math.round(po/pt*100):0;
+  });
+  return {global:tot?Math.round(ok/tot*100):0,pillars};
+};
+
+// ── UI ─────────────────────────────────────────────────────────
+const Tag=({children,color})=>(
+  <span style={{fontSize:10,fontWeight:600,letterSpacing:0.5,color,padding:"2px 8px",borderRadius:20,background:`${color}20`,border:`1px solid ${color}40`}}>{children}</span>
+);
+const Card=({children,style={}})=>(
+  <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:16,marginBottom:10,...style}}>{children}</div>
+);
+const SaveDot=({saving})=>(
+  <div style={{width:7,height:7,borderRadius:"50%",background:saving?C.warn:C.good,transition:"background 0.4s",flexShrink:0}}/>
+);
+
+const MultiWeekChart=({history})=>{
+  const [hov,setHov]=useState(null);
+  if(!history||history.every(h=>h.global===0)) return(
+    <div style={{textAlign:"center",padding:"24px 0",color:C.faint,fontSize:12}}>Les données s'accumuleront au fil des semaines 📅</div>
+  );
+  const maxH=80;
+  return(
+    <div>
+      <div style={{display:"flex",alignItems:"flex-end",gap:8,height:maxH+24,marginBottom:8}}>
+        {history.map((w,i)=>{
+          const h=Math.max(w.global/100*maxH,w.global>0?4:0);
+          const col=w.global>=80?C.good:w.global>=50?C.warn:w.global>=20?C.danger:C.border;
+          const isCur=i===history.length-1;
+          return(
+            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}
+              onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}>
+              {hov===i&&w.global>0&&<div style={{fontSize:10,fontWeight:700,color:col}}>{w.global}%</div>}
+              <div style={{width:"100%",display:"flex",alignItems:"flex-end",justifyContent:"center",height:maxH}}>
+                <div style={{width:"100%",height:h,background:isCur?`linear-gradient(180deg,${C.accent},${C.warn}88)`:col,borderRadius:"6px 6px 3px 3px",border:isCur?`1px solid ${C.accent}`:hov===i?`1px solid ${col}`:"1px solid transparent",transition:"all 0.2s",opacity:hov!==null&&hov!==i?0.5:1}}/>
+              </div>
+              <div style={{fontSize:9,color:isCur?C.accent:C.faint,fontWeight:isCur?700:400,textAlign:"center",lineHeight:1.3}}>{w.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      {hov!==null&&history[hov].global>0&&(
+        <div style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",marginBottom:10}}>
+          <div style={{fontSize:11,fontWeight:600,marginBottom:10,color:C.muted}}>{history[hov].label} — détail</div>
+          {/* Streaks */}
+          <Card>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>🔥 Streaks — jours consécutifs</div>
+            <div style={{fontSize:11,color:C.faint,marginBottom:14}}>Persistants d'une semaine à l'autre</div>
+            {PILLARS.map(p=>{
+              const streak=getStreak(p.id), best=getBestStreak(p.id);
+              const fire = streak>=7?"🔥🔥🔥":streak>=5?"🔥🔥":streak>=3?"🔥":streak>=1?"✦":"–";
+              return(
+                <div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{width:32,height:32,borderRadius:8,background:`${p.color}15`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>{p.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:500}}>{p.label}</div>
+                    <div style={{fontSize:10,color:C.faint,marginTop:2}}>Record : {best} jour{best>1?"s":""}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:18,fontWeight:800,color:streak>=1?p.color:C.faint,lineHeight:1}}>{streak}</div>
+                    <div style={{fontSize:9,color:C.faint}}>en cours {fire}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+
+          {PILLARS.map(p=>{
+            const val=history[hov].pillars[p.id]||0;
+            return(
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:7}}>
+                <span style={{fontSize:13,width:20}}>{p.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${val}%`,background:p.color,borderRadius:3,transition:"width 0.3s"}}/>
+                  </div>
+                </div>
+                <div style={{fontSize:11,fontWeight:600,color:p.color,minWidth:32,textAlign:"right"}}>{val}%</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div style={{marginTop:8}}>
+        {PILLARS.map(p=>(
+          <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+            <span style={{fontSize:12,width:20}}>{p.icon}</span>
+            <div style={{display:"flex",gap:4,flex:1}}>
+              {history.map((w,i)=>{
+                const val=w.pillars[p.id]||0;
+                return(
+                  <div key={i} style={{flex:1,height:14,borderRadius:4,background:val>0?p.color:C.border,opacity:val>0?Math.max(val/100,0.15):0.3,border:i===history.length-1?`1px solid ${p.color}60`:"none"}}/>
+                );
+              })}
+            </div>
+            <div style={{fontSize:10,color:C.faint,minWidth:28,textAlign:"right"}}>{history[history.length-1].pillars[p.id]||0}%</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Confetti ───────────────────────────────────────────────────
+const Confetti = ({ active }) => {
+  const [particles, setParticles] = useState([]);
+  useEffect(() => {
+    if (!active) return;
+    const colors = ["#D97706","#16A34A","#2563EB","#7C3AED","#EA580C","#E11D48","#0891B2"];
+    const p = Array.from({length:60},(_,i)=>({
+      id:i, x:Math.random()*100, delay:Math.random()*0.5,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      size:6+Math.random()*6, rot:Math.random()*360,
+      vx:(Math.random()-0.5)*4, dur:1.5+Math.random()*1,
+    }));
+    setParticles(p);
+    const t = setTimeout(()=>setParticles([]),2500);
+    return ()=>clearTimeout(t);
+  },[active]);
+  if(!particles.length) return null;
+  return(
+    <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:999,overflow:"hidden"}}>
+      <style>{`
+        @keyframes fall {
+          0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity:0; }
+        }
+      `}</style>
+      {particles.map(p=>(
+        <div key={p.id} style={{
+          position:"absolute", left:`${p.x}%`, top:0,
+          width:p.size, height:p.size,
+          background:p.color, borderRadius:p.id%3===0?"50%":p.id%3===1?"2px":"0",
+          animation:`fall ${p.dur}s ease-in ${p.delay}s forwards`,
+        }}/>
+      ))}
+    </div>
+  );
+};
+
+// ── Weight Curve ───────────────────────────────────────────────
+const WeightCurve = ({ weights, startWeight, target=82 }) => {
+  const entries = DAYS.map((d,i)=>({ day:d, val:weights[d]||null, i })).filter(e=>e.val!==null);
+  if(entries.length < 1) return(
+    <div style={{textAlign:"center",padding:"20px 0",color:C.faint,fontSize:12}}>
+      Logue ton poids chaque jour pour voir la courbe 📈
+    </div>
+  );
+  const allVals = [startWeight, target, ...entries.map(e=>e.val)];
+  const minV = Math.floor(Math.min(...allVals)-1);
+  const maxV = Math.ceil(Math.max(...allVals)+1);
+  const W=300, H=120, padL=36, padR=12, padT=12, padB=24;
+  const iW=W-padL-padR, iH=H-padT-padB;
+  const xPos = i => padL + (i/6)*iW;
+  const yPos = v => padT + iH - ((v-minV)/(maxV-minV))*iH;
+
+  // Ligne de progression
+  const points = entries.map(e=>`${xPos(e.i)},${yPos(e.val)}`).join(" ");
+  const pathD = entries.map((e,i)=>i===0?`M${xPos(e.i)},${yPos(e.val)}`:`L${xPos(e.i)},${yPos(e.val)}`).join(" ");
+  const areaD = entries.length>1 ? `${pathD} L${xPos(entries.at(-1).i)},${padT+iH} L${xPos(entries[0].i)},${padT+iH} Z` : null;
+  const yTarget = yPos(target);
+  const yStart  = yPos(startWeight);
+
+  return(
+    <div style={{overflowX:"auto"}}>
+      <svg width={W} height={H} style={{display:"block",margin:"0 auto"}}>
+        {/* Ligne cible 82kg */}
+        <line x1={padL} y1={yTarget} x2={W-padR} y2={yTarget} stroke={C.good} strokeWidth="1" strokeDasharray="4 3" opacity="0.6"/>
+        <text x={W-padR+2} y={yTarget+4} fontSize="8" fill={C.good} opacity="0.8">{target}</text>
+        {/* Ligne départ */}
+        <line x1={padL} y1={yStart} x2={W-padR} y2={yStart} stroke={C.faint} strokeWidth="1" strokeDasharray="3 3" opacity="0.4"/>
+        {/* Zone remplie */}
+        {areaD&&<path d={areaD} fill={C.nutri} opacity="0.07"/>}
+        {/* Courbe */}
+        {entries.length>1&&<path d={pathD} fill="none" stroke={C.nutri} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>}
+        {/* Points */}
+        {entries.map(e=>(
+          <g key={e.i}>
+            <circle cx={xPos(e.i)} cy={yPos(e.val)} r="4" fill={e.val<=target?C.good:C.nutri} stroke="#fff" strokeWidth="1.5"/>
+            <text x={xPos(e.i)} y={yPos(e.val)-8} fontSize="9" fill={C.muted} textAnchor="middle">{e.val}</text>
+          </g>
+        ))}
+        {/* Axe Y labels */}
+        {[minV, Math.round((minV+maxV)/2), maxV].map(v=>(
+          <text key={v} x={padL-4} y={yPos(v)+4} fontSize="8" fill={C.faint} textAnchor="end">{v}</text>
+        ))}
+        {/* Axe X labels */}
+        {DAYS.map((d,i)=>(
+          <text key={d} x={xPos(i)} y={H-6} fontSize="8" fill={C.faint} textAnchor="middle">{d}</text>
+        ))}
+      </svg>
+    </div>
+  );
+};
+
+// ── Planning Tab Component ─────────────────────────────────────
+const PlanningTab = ({pillarOf}) => {
+  const todayIdx = new Date().getDay()===0?6:new Date().getDay()-1;
+  const [planDay, setPlanDay] = useState(todayIdx);
+  const sched = DAY_SCHEDULE[planDay];
+  const dayIcons = ["🏉","🏢","🏢","🏢","🏠","🌅","🌿"];
+  return(<>
+    <div style={{display:"flex",gap:5,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
+      {DAYS.map((d,i)=>{
+        const s=DAY_SCHEDULE[i], isToday=i===todayIdx, active=planDay===i;
+        return(
+          <button key={d} onClick={()=>setPlanDay(i)} style={{flex:"0 0 auto",width:50,padding:"10px 0",background:active?s.color:isToday?s.color+"20":"#FFFFFF",border:"1px solid "+(active?s.color:isToday?s.color+"60":"#E7E4DF"),borderRadius:12,cursor:"pointer",color:active?"#fff":"#1C1917",fontFamily:"inherit",transition:"all 0.15s",textAlign:"center"}}>
+            <div style={{fontSize:9,letterSpacing:0.5,marginBottom:3,fontWeight:600,opacity:0.8}}>{d}</div>
+            <div style={{fontSize:13}}>{dayIcons[i]}</div>
+          </button>
+        );
+      })}
+    </div>
+    <div style={{background:sched.color+"12",border:"1px solid "+sched.color+"40",borderRadius:14,padding:"14px 16px",marginBottom:16}}>
+      <div style={{fontSize:15,fontWeight:700,color:sched.color,marginBottom:4}}>{FULL_DAYS[planDay]}</div>
+      <div style={{fontSize:12,color:"#78716C",marginBottom:6}}>{sched.type}</div>
+      <div style={{fontSize:11,color:"#A8A29E",lineHeight:1.5,fontStyle:"italic"}}>💡 {sched.note}</div>
+    </div>
+    <div style={{position:"relative"}}>
+      <div style={{position:"absolute",left:19,top:8,bottom:8,width:2,background:"#E7E4DF",borderRadius:2,zIndex:0}}/>
+      {sched.blocs.map((b,i)=>{
+        const p = b.pillar ? pillarOf(b.pillar) : null;
+        return(
+          <div key={i} style={{display:"flex",gap:12,marginBottom:8,position:"relative"}}>
+            <div style={{width:40,flexShrink:0,display:"flex",justifyContent:"center",paddingTop:14,zIndex:1}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:p?p.color:"#E7E4DF",border:"2px solid "+(p?p.color:"#E7E4DF"),flexShrink:0}}/>
+            </div>
+            <div style={{flex:1,background:b.optional?"#F5F3F0":"#FFFFFF",border:"1px solid "+(p?p.color+"30":"#E7E4DF"),borderLeft:"3px solid "+(p?p.color+(b.optional?"66":""):"#E7E4DF"),borderRadius:12,padding:"10px 14px",opacity:b.optional?0.8:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                <span style={{fontSize:13}}>{b.icon}</span>
+                <div style={{fontSize:10,color:"#A8A29E"}}>{b.time}</div>
+                {b.optional&&<span style={{fontSize:9,color:"#A8A29E",background:"#F5F3F0",border:"1px solid #E7E4DF",borderRadius:10,padding:"1px 7px"}}>optionnel</span>}
+              </div>
+              <div style={{fontSize:13,fontWeight:500,color:b.pillar===null?"#78716C":"#1C1917"}}>{b.label}</div>
+              {p&&<div style={{fontSize:10,color:p.color,marginTop:3,fontWeight:600}}>{p.icon} {p.label}</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+    <div style={{background:"#FFFFFF",border:"1px solid #E7E4DF",borderRadius:16,padding:16,marginBottom:10,borderTop:"2px solid #D97706",marginTop:8}}>
+      <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>⚠️ Règle Anti-Saboteur</div>
+      <div style={{fontSize:12,color:"#78716C",lineHeight:1.7}}><strong style={{color:"#1C1917"}}>La règle des 2 jours max :</strong> ne rate jamais 2 jours consécutifs sur un même pilier. Un seul raté = encore dans les clous. Deux = spirale.</div>
+    </div>
+  </>);
+};
+
+// ── TODO Component ─────────────────────────────────────────────
+const TodoList=({todos,setTodos})=>{
+  const [newTitle,setNewTitle]=useState("");
+  const [newDate,setNewDate]=useState("");
+  const inputSt={background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"9px 12px",color:C.text,fontFamily:"inherit",fontSize:12,outline:"none"};
+
+  const add=()=>{
+    if(!newTitle.trim()) return;
+    const todo={id:Date.now(),title:newTitle.trim(),date:newDate,done:false};
+    setTodos(p=>[...p,todo]);
+    setNewTitle(""); setNewDate("");
+  };
+  const toggle=id=>setTodos(p=>p.map(t=>t.id===id?{...t,done:!t.done}:t));
+  const remove=id=>setTodos(p=>p.filter(t=>t.id!==id));
+
+  const sorted=[...todos].sort((a,b)=>{
+    if(a.done!==b.done) return a.done?1:-1;
+    if(a.date&&b.date) return a.date.localeCompare(b.date);
+    if(a.date) return -1; if(b.date) return 1;
+    return 0;
+  });
+
+  const today=new Date().toISOString().split("T")[0];
+  const isLate=d=>d&&d<today;
+  const isSoon=d=>d&&d>=today&&d<=new Date(Date.now()+3*86400000).toISOString().split("T")[0];
+
+  return(
+    <Card>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <div style={{fontSize:14,fontWeight:700}}>🎯 Objectifs & To-Do</div>
+        <span style={{fontSize:11,color:C.faint}}>{todos.filter(t=>!t.done).length} en cours</span>
+      </div>
+      {/* Ajout */}
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14,padding:"12px",background:C.surface2,borderRadius:12,border:`1px solid ${C.border}`}}>
+        <input placeholder="Nouvel objectif..." value={newTitle} onChange={e=>setNewTitle(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&add()}
+          style={{...inputSt,width:"100%",boxSizing:"border-box"}}/>
+        <div style={{display:"flex",gap:8}}>
+          <input type="date" value={newDate} onChange={e=>setNewDate(e.target.value)}
+            style={{...inputSt,flex:1}}/>
+          <button onClick={add} style={{background:C.accent,border:"none",borderRadius:10,padding:"9px 16px",color:"#fff",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:12}}>+ Ajouter</button>
+        </div>
+      </div>
+      {/* Liste */}
+      {sorted.length===0?(
+        <div style={{textAlign:"center",padding:"20px 0",color:C.faint,fontSize:12}}>Aucun objectif pour l'instant 🌱</div>
+      ):sorted.map(t=>{
+        const late=isLate(t.date)&&!t.done;
+        const soon=isSoon(t.date)&&!t.done;
+        return(
+          <div key={t.id} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
+            <button onClick={()=>toggle(t.id)} style={{width:22,height:22,borderRadius:6,border:`1.5px solid ${t.done?C.good:C.border}`,background:t.done?C.good:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>
+              {t.done&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
+            </button>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,color:t.done?C.faint:C.text,textDecoration:t.done?"line-through":"none",lineHeight:1.4}}>{t.title}</div>
+              {t.date&&(
+                <div style={{fontSize:11,marginTop:3,color:late?C.danger:soon?C.warn:C.faint,fontWeight:late||soon?600:400}}>
+                  {late?"⚠ ":soon?"⏰ ":""}{new Date(t.date+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}
+                </div>
+              )}
+            </div>
+            <button onClick={()=>remove(t.id)} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:16,padding:"0 4px",lineHeight:1}}>×</button>
+          </div>
+        );
+      })}
+    </Card>
+  );
+};
+
+// ── App ────────────────────────────────────────────────────────
+function App() {
+  const [loaded,setLoaded]           = useState(false);
+  const [saving,setSaving]           = useState(false);
+  const [tab,setTab]                 = useState("tracker");
+  const [checks,setChecks]           = useState({});
+  const [activeDay,setActiveDay]     = useState(new Date().getDay()===0?6:new Date().getDay()-1);
+  const [weights,setWeights]         = useState({});
+  const [startWeight,setStartWeight] = useState(null);
+  const [savings,setSavings]         = useState({target:500,saved:0});
+  const [newWeight,setNewWeight]     = useState("");
+  const [newSaving,setNewSaving]     = useState("");
+  const [quote]                      = useState(QUOTES[Math.floor(Math.random()*QUOTES.length)]);
+  const [nutriTab,setNutriTab]       = useState("plan");
+  const [selOpts,setSelOpts]         = useState({matin:0,midi:0,collation:0,soir:0});
+  const [doneM,setDoneM]             = useState({});
+  const [gymDay,setGymDay]           = useState(false);
+  const [history,setHistory]             = useState([]);
+  const [newWeekBanner,setNewWeekBanner] = useState(false);
+  const [todos,setTodos]                 = useState([]);
+  const [streaks,setStreaks]             = useState({});
+  const [confetti,setConfetti]           = useState(false);
+  const wk=getWeekKey(), dk=getDayKey(), yk=getYesterdayKey();
+
+  useEffect(()=>{
+    (async()=>{
+      const [ch,wt,sw,sav,so,dm,lastWk,td,savedStreaks,yesterdayDone]=await Promise.all([
+        load(`${wk}_checks`,{}),load("weights",{}),load("startWeight",null),
+        load("savings",{target:500,saved:0}),load("selOpts",{matin:0,midi:0,collation:0,soir:0}),
+        load(`doneM_${dk}`,{}),load("lastWeekKey",null),load("todos",[]),
+        load("streaks",{}), load(`donePillars_${yk}`,{}),
+      ]);
+      setChecks(ch);setWeights(wt);setStartWeight(sw);
+      setSavings(sav);setSelOpts(so);setDoneM(dm);setTodos(td);
+
+      // Recalcule les streaks au chargement
+      // Si hier était complété pour un pilier → le streak continue, sinon reset
+      const initStreaks = {};
+      PILLARS.forEach(p=>{
+        const prev = savedStreaks[p.id] || {current:0, best:0};
+        const doneYesterday = !!yesterdayDone[p.id];
+        const current = doneYesterday ? prev.current : 0;
+        initStreaks[p.id] = {current, best: Math.max(prev.best, current)};
+      });
+      setStreaks(initStreaks);
+
+      if(lastWk&&lastWk!==wk) setNewWeekBanner(true);
+      await save("lastWeekKey",wk);
+      const WEEKS=6;
+      const labels=["Sem. −5","Sem. −4","Sem. −3","Sem. −2","Sem. −1","Cette sem."];
+      const histData=await Promise.all(
+        Array.from({length:WEEKS},(_,i)=>WEEKS-1-i).map(async(offset,idx)=>{
+          const key=getWeekKey(offset);
+          const c=offset===0?ch:await load(`${key}_checks`,{});
+          return{label:labels[idx],...computeScores(c),key};
+        })
+      );
+      setHistory(histData);setLoaded(true);
+    })();
+  },[]);
+
+  useEffect(()=>{if(!loaded)return;setHistory(prev=>prev.map(w=>w.key===wk?{...w,...computeScores(checks)}:w));},[checks,loaded]);
+
+  // Confetti quand un pilier est complété à 100% aujourd'hui
+  useEffect(()=>{
+    if(!loaded) return;
+    const today = new Date().getDay()===0?6:new Date().getDay()-1;
+    const allDone = PILLARS.every(p=>getPillarDoneOnDay(p.id,today));
+    if(allDone){ setConfetti(true); setTimeout(()=>setConfetti(false),2600); }
+  },[checks,loaded]);
+  useEffect(()=>{
+    if(!loaded) return;
+    const today = new Date().getDay()===0?6:new Date().getDay()-1;
+    const donePillars = {};
+    const newStreaks = {};
+    PILLARS.forEach(p=>{
+      const doneToday = getPillarDoneOnDay(p.id, today);
+      donePillars[p.id] = doneToday;
+      const prev = streaks[p.id] || {current:0, best:0};
+      const current = doneToday ? prev.current + (prev._lastDay === dk ? 0 : 1) : prev.current;
+      newStreaks[p.id] = {current, best: Math.max(prev.best, current), _lastDay: doneToday ? dk : prev._lastDay};
+    });
+    // Ne persist que si changement réel
+    const changed = PILLARS.some(p=>(streaks[p.id]?.current||0) !== newStreaks[p.id].current);
+    if(changed){
+      setStreaks(newStreaks);
+      persist([["streaks", newStreaks], [`donePillars_${dk}`, donePillars]]);
+    }
+  },[checks, loaded]);
+
+  const persist=useCallback(async(updates)=>{setSaving(true);await Promise.all(updates.map(([k,v])=>save(k,v)));setTimeout(()=>setSaving(false),600);},[]);
+  const setAndSave=(setter,key)=>fn=>setter(prev=>{const next=fn(prev);persist([[key,next]]);return next;});
+  const setC  =setAndSave(setChecks,`${wk}_checks`);
+  const setW  =setAndSave(setWeights,"weights");
+  const setSv =setAndSave(setSavings,"savings");
+  const setSo =setAndSave(setSelOpts,"selOpts");
+  const setDm =setAndSave(setDoneM,`doneM_${dk}`);
+  const setSW =v=>{setStartWeight(v);persist([["startWeight",v]]);};
+
+  // Todos avec persistence
+  const setTodosP=fn=>{setTodos(prev=>{const next=typeof fn==="function"?fn(prev):fn;persist([["todos",next]]);return next;});};
+
+  const toggle=(d,pid,slot)=>{if(pid==="sport")return;const k=`${d}-${pid}-${slot}`;setC(p=>({...p,[k]:!p[k]}));};
+  const toggleSport=(d,type)=>{const k=`${d}-sport-${type}`;setC(p=>({...p,[k]:!p[k]}));};
+  const chkSport=(d,type)=>!!checks[`${d}-sport-${type}`];
+  const sportCount=d=>PILLARS.find(p=>p.id==="sport").types.filter(t=>chkSport(d,t)).length;
+  const chk=(d,pid,slot)=>!!checks[`${d}-${pid}-${slot}`];
+  const pCount=pid=>{
+    if(pid==="sport"){let n=0;DAYS.forEach((_,d)=>{if(sportCount(d)>0)n++;});return n;}
+    let n=0;DAYS.forEach((_,d)=>PILLARS.find(p=>p.id===pid).slots.forEach(s=>{if(chk(d,pid,s))n++;}));return n;
+  };
+  const dayScore=d=>{
+    let ok=0,tot=0;
+    PILLARS.forEach(p=>{
+      if(p.id==="sport"){tot++;if(sportCount(d)>0)ok++;}
+      else p.slots.forEach(s=>{tot++;if(chk(d,p.id,s))ok++;});
+    });
+    return tot?Math.round(ok/tot*100):0;
+  };
+  const gScore=()=>{let ok=0,tot=0;DAYS.forEach((_,d)=>{tot+=100;ok+=dayScore(d);});return tot?Math.round(ok/tot*100):0;};
+
+  const getPillarDoneOnDay = (pid, d) => {
+    if(pid==="sport") return sportCount(d)>0;
+    return PILLARS.find(p=>p.id===pid).slots.every(s=>chk(d,pid,s));
+  };
+  const getStreak  = (pid) => streaks[pid]?.current || 0;
+  const getBestStreak = (pid) => streaks[pid]?.best || 0;
+  const pillarOf=id=>PILLARS.find(p=>p.id===id);
+  const sCol=s=>s>=80?C.good:s>=50?C.warn:s>=20?C.danger:C.faint;
+  const toggleOpt=key=>setSo(p=>({...p,[key]:(p[key]+1)%MEALS[key].options.length}));
+  const mealTot=key=>MEALS[key].options[selOpts[key]].aliments.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.p,g:a.g+x.g,l:a.l+x.l}),{kcal:0,p:0,g:0,l:0});
+  const dayTot=()=>{let r={kcal:0,p:0,g:0,l:0};Object.keys(MEALS).forEach(k=>{const t=mealTot(k);r.kcal+=t.kcal;r.p+=t.p;r.g+=t.g;r.l+=t.l;});if(gymDay){r.kcal+=150;r.g+=35;}return r;};
+
+  const gs=gScore(),dt=dayTot(),deficit=2300-dt.kcal;
+  const inputSt={flex:1,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontFamily:"inherit",fontSize:13,outline:"none"};
+  const btnSt=color=>({background:color,border:"none",borderRadius:10,padding:"10px 18px",color:"#fff",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:12});
+  const ghostBtn={background:"none",border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 14px",color:C.faint,cursor:"pointer",fontFamily:"inherit",fontSize:11};
+  const TABS=[{id:"tracker",label:"Tracker"},{id:"planning",label:"Planning"},{id:"nutrition",label:"Nutrition"},{id:"stats",label:"Stats"}];
+
+  const slotLabel=s=>s==="lu"?"Lu ✓":s==="fait"?"Fait ✓":s==="done"?"💎 Tirelire remplie":s==="no-cig"?"🚭 Sans clope":s==="no-alc"?"🍷 Sans alcool":s.charAt(0).toUpperCase()+s.slice(1);
+
+  if(!loaded) return(
+    <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",color:C.muted,flexDirection:"column",gap:14}}>
+      <div style={{width:32,height:32,border:`2px solid ${C.border}`,borderTop:`2px solid ${C.accent}`,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+      <div style={{fontSize:13}}>Chargement...</div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  return(
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"system-ui,-apple-system,sans-serif",color:C.text}}>
+      {/* HEADER */}
+      <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:"16px 20px 0",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:10,background:C.accentSoft,border:`1px solid ${C.accent}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>⚡</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,letterSpacing:-0.3}}>Mon Système</div>
+              <div style={{fontSize:11,color:C.faint}}>Semaine en cours</div>
+            </div>
+            <SaveDot saving={saving}/>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:28,fontWeight:800,color:sCol(gs),lineHeight:1}}>{gs}<span style={{fontSize:14,fontWeight:500,color:C.faint}}>%</span></div>
+            <div style={{fontSize:10,color:C.faint}}>score global</div>
+          </div>
+        </div>
+        <div style={{height:2,background:C.border,borderRadius:2,marginBottom:14,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${gs}%`,background:`linear-gradient(90deg,${C.accent},${C.warn})`,borderRadius:2,transition:"width 0.4s"}}/>
+        </div>
+        <div style={{display:"flex",gap:2}}>
+          {TABS.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",padding:"9px 4px",fontSize:12,fontWeight:tab===t.id?600:400,color:tab===t.id?C.text:C.faint,borderBottom:tab===t.id?`2px solid ${C.accent}`:"2px solid transparent",cursor:"pointer",fontFamily:"inherit",marginBottom:-1,transition:"all 0.15s"}}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{padding:"16px 16px 80px",maxWidth:480,margin:"0 auto"}}>
+        <Confetti active={confetti}/>
+      {newWeekBanner&&(
+          <div style={{background:`linear-gradient(135deg,${C.accentSoft},${C.good}15)`,border:`1px solid ${C.accent}40`,borderRadius:14,padding:"14px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,marginBottom:3}}>🎉 Nouvelle semaine !</div>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>Tes habitudes ont été remises à zéro. Repas et scores archivés dans l'historique.</div>
+            </div>
+            <button onClick={()=>setNewWeekBanner(false)} style={{...ghostBtn,flexShrink:0}}>OK ✓</button>
+          </div>
+        )}
+
+        {/* ── TRACKER ── */}
+        {tab==="tracker"&&(<>
+          <div style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 16px",marginBottom:16,borderLeft:`3px solid ${C.accent}`}}>
+            <div style={{fontSize:12,color:C.muted,fontStyle:"italic",lineHeight:1.6}}>"{quote}"</div>
+          </div>
+          <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
+            {DAYS.map((d,i)=>{
+              const s=dayScore(i),isToday=i===(new Date().getDay()===0?6:new Date().getDay()-1),active=activeDay===i;
+              return(
+                <button key={d} onClick={()=>setActiveDay(i)} style={{flex:"0 0 auto",width:50,padding:"10px 0",background:active?C.accent:isToday?C.accentSoft:C.surface,border:`1px solid ${active?C.accent:isToday?C.accent+"60":C.border}`,borderRadius:12,cursor:"pointer",color:active?"#fff":s>0?C.text:C.faint,fontFamily:"inherit",transition:"all 0.15s"}}>
+                  <div style={{fontSize:9,letterSpacing:0.5,marginBottom:4,fontWeight:600,opacity:0.8}}>{d}</div>
+                  <div style={{fontSize:14,fontWeight:800}}>{s>0?s:"–"}</div>
+                  {s>0&&<div style={{fontSize:9,opacity:0.6}}>%</div>}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{fontSize:11,color:C.faint,marginBottom:14,display:"flex",alignItems:"center",gap:6}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:C.accent,display:"inline-block"}}/>
+            {FULL_DAYS[activeDay]} — habitudes du jour
+          </div>
+          {PILLARS.map(p=>(
+            <Card key={p.id}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <div style={{width:38,height:38,borderRadius:10,background:`${p.color}15`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{p.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:14,marginBottom:3}}>{p.label}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{fontSize:11,color:C.faint}}>{pCount(p.id)}/{p.target} {p.unit}s cette semaine</div>
+                    {getStreak(p.id)>=2&&(
+                      <span style={{fontSize:10,fontWeight:700,color:C.warn,background:`${C.warn}15`,border:`1px solid ${C.warn}40`,borderRadius:20,padding:"1px 8px"}}>
+                        🔥 {getStreak(p.id)} jours
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <svg width="36" height="36" style={{transform:"rotate(-90deg)",flexShrink:0}}>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke={C.border} strokeWidth="3"/>
+                  <circle cx="18" cy="18" r="14" fill="none" stroke={p.color} strokeWidth="3" strokeDasharray={`${Math.min(pCount(p.id)/p.target,1)*88} 88`} strokeLinecap="round"/>
+                </svg>
+              </div>
+              {p.id==="sport"?(
+                <>
+                  <div style={{display:"flex",gap:8}}>
+                    {p.types.map(type=>{
+                      const on=chkSport(activeDay,type);
+                      const icons={"Crossfit":"🏋️","Trail":"🏃","Rugby":"🏉","Autre":"✦"};
+                      return(
+                        <button key={type} onClick={()=>toggleSport(activeDay,type)} style={{flex:1,padding:"11px 0",background:on?p.color:C.surface2,border:`1px solid ${on?p.color:C.border}`,borderRadius:10,cursor:"pointer",color:on?"#fff":C.muted,fontFamily:"inherit",fontSize:12,fontWeight:on?600:400,transition:"all 0.15s",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
+                          <span style={{fontSize:16}}>{icons[type]}</span>
+                          <span>{type}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {p.types.some(t=>chkSport(activeDay,t))&&(
+                    <div style={{marginTop:10,display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {p.types.filter(t=>chkSport(activeDay,t)).map(t=>(
+                        <span key={t} style={{fontSize:10,fontWeight:600,color:p.color,background:`${p.color}15`,border:`1px solid ${p.color}30`,borderRadius:20,padding:"2px 10px"}}>{t}</span>
+                      ))}
+                      <span style={{fontSize:10,color:C.faint,alignSelf:"center"}}>· {p.types.filter(t=>chkSport(activeDay,t)).length} séance{p.types.filter(t=>chkSport(activeDay,t)).length>1?"s":""} aujourd'hui</span>
+                    </div>
+                  )}
+                </>
+              ):(
+                <div style={{display:"flex",gap:8,flexWrap:p.slots.length>3?"wrap":"nowrap"}}>
+                  {p.slots.map(slot=>{
+                    const on=chk(activeDay,p.id,slot);
+                    return(
+                      <button key={slot} onClick={()=>toggle(activeDay,p.id,slot)} style={{flex:1,minWidth:p.slots.length>3?"45%":undefined,padding:"11px 8px",background:on?p.color:C.surface2,border:`1px solid ${on?p.color:C.border}`,borderRadius:10,cursor:"pointer",color:on?"#fff":C.muted,fontFamily:"inherit",fontSize:12,fontWeight:on?600:400,transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                        <span style={{fontSize:14}}>{on?"✓":"○"}</span>
+                        {slotLabel(slot)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div style={{fontSize:11,color:C.faint,marginTop:10,lineHeight:1.5}}>💡 {p.tip}</div>
+            </Card>
+          ))}
+        </>)}
+
+        {/* ── PLANNING ── */}
+        {tab==="planning"&&<PlanningTab pillarOf={pillarOf}/>}
+
+        {/* ── NUTRITION ── */}
+        {tab==="nutrition"&&(<>
+          <Card>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div>
+                <div style={{fontSize:11,color:C.faint,marginBottom:2}}>Objectif −1 kg / semaine</div>
+                <div style={{fontSize:17,fontWeight:700}}>Plan du jour</div>
+              </div>
+              <button onClick={()=>setGymDay(g=>!g)} style={{background:gymDay?`${C.sport}15`:C.surface2,border:`1px solid ${gymDay?C.sport:C.border}`,borderRadius:20,padding:"7px 14px",color:gymDay?C.sport:C.muted,fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:11}}>{gymDay?"⚡ Salle +150":"Jour de salle ?"}</button>
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:14}}>
+              {[
+                {label:"Kcal",val:dt.kcal,target:MACROS_TARGET.kcal,color:C.warn},
+                {label:"Prot.",val:dt.p,target:MACROS_TARGET.proteines,color:C.nutri},
+                {label:"Gluc.",val:dt.g,target:MACROS_TARGET.glucides,color:C.sport},
+                {label:"Lip.", val:dt.l,target:MACROS_TARGET.lipides, color:C.lecture},
+              ].map(m=>{
+                const over=m.val>m.target*1.05;
+                return(
+                  <div key={m.label} style={{flex:1,background:C.surface2,borderRadius:10,padding:"10px 8px",border:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:14,fontWeight:700,color:over?C.danger:m.color,marginBottom:4}}>{m.val}</div>
+                    <div style={{height:3,background:C.border,borderRadius:2,overflow:"hidden",marginBottom:6}}>
+                      <div style={{height:"100%",width:`${Math.min(m.val/m.target,1)*100}%`,background:over?C.danger:m.color,borderRadius:2}}/>
+                    </div>
+                    <div style={{fontSize:9,color:C.faint}}>{m.label}/{m.target}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{padding:"10px 14px",background:deficit>=500?`${C.good}12`:`${C.warn}12`,border:`1px solid ${deficit>=500?C.good:C.warn}35`,borderRadius:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:12,color:C.muted}}>Déficit estimé</span>
+              <span style={{fontSize:14,fontWeight:700,color:deficit>=500?C.good:C.warn}}>−{deficit} kcal {deficit>=500?"✓":"⚠"}</span>
+            </div>
+          </Card>
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
+            {[{id:"plan",label:"Plan repas"},{id:"regles",label:"Règles clés"},{id:"abaque",label:"Abaque 🔍"}].map(t=>(
+              <button key={t.id} onClick={()=>setNutriTab(t.id)} style={{flex:1,padding:"10px 0",background:nutriTab===t.id?C.nutri:C.surface,border:`1px solid ${nutriTab===t.id?C.nutri:C.border}`,borderRadius:10,color:nutriTab===t.id?"#fff":C.muted,fontFamily:"inherit",fontSize:11,fontWeight:600,cursor:"pointer",transition:"all 0.15s"}}>{t.label}</button>
+            ))}
+          </div>
+          {nutriTab==="plan"&&Object.entries(MEALS).map(([key,meal])=>{
+            const opts=meal.options, cur=selOpts[key], opt=opts[cur], mt=mealTot(key), done=doneM[key];
+            return(
+              <div key={key} style={{background:C.surface,border:`1px solid ${done?meal.color+"50":C.border}`,borderRadius:16,marginBottom:12,overflow:"hidden",opacity:done?0.6:1,transition:"all 0.2s"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 15px",borderBottom:`1px solid ${C.border}`}}>
+                  <span style={{fontSize:20}}>{meal.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                      <Tag color={meal.color}>{meal.label}</Tag>
+                      <span style={{fontSize:10,color:C.faint}}>{meal.time}</span>
+                    </div>
+                    <div style={{fontSize:11,color:C.muted}}>{mt.kcal} kcal · {mt.p}g prot</div>
+                  </div>
+                  <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                    {opts.length>1&&(
+                      <div style={{display:"flex",alignItems:"center",gap:4}}>
+                        <button onClick={()=>setSo(p=>({...p,[key]:(p[key]-1+opts.length)%opts.length}))} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12}}>‹</button>
+                        <span style={{fontSize:10,color:C.faint,minWidth:28,textAlign:"center"}}>{cur+1}/{opts.length}</span>
+                        <button onClick={()=>toggleOpt(key)} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12}}>›</button>
+                      </div>
+                    )}
+                    <button onClick={()=>setDm(p=>({...p,[key]:!p[key]}))} style={{width:32,height:32,borderRadius:8,background:done?meal.color:C.surface2,border:`1px solid ${done?meal.color:C.border}`,color:done?"#fff":C.faint,fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{done?"✓":"○"}</button>
+                  </div>
+                </div>
+                <div style={{padding:"7px 15px 5px",background:C.surface2,borderBottom:`1px solid ${C.border}`}}>
+                  <span style={{fontSize:10,color:C.faint,fontStyle:"italic"}}>{opt.nom}</span>
+                </div>
+                {opt.aliments.map((a,i)=>(
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 15px",borderBottom:i<opt.aliments.length-1?`1px solid ${C.border}`:"none"}}>
+                    <div>
+                      <div style={{fontSize:13}}>{a.nom}</div>
+                      <div style={{fontSize:11,color:C.faint}}>{a.qte}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:13,fontWeight:600,color:meal.color}}>{a.kcal} kcal</div>
+                      <div style={{fontSize:10,color:C.faint}}>P{a.p} G{a.g} L{a.l}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+          {nutriTab==="abaque"&&(
+            <Card>
+              <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>📊 Abaque nutritionnel</div>
+              <div style={{fontSize:11,color:C.faint,marginBottom:14}}>55 ingrédients · recherche + filtres + tri</div>
+              <NutriAbaque/>
+            </Card>
+          )}
+          {nutriTab==="regles"&&(<>
+            {/* Rôles des macros */}
+            <div style={{fontSize:13,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+              <span>⚗️</span> Rôle des macronutriments
+            </div>
+            {MACRO_ROLES.map(m=>(
+              <Card key={m.macro} style={{marginBottom:10,borderLeft:`3px solid ${m.color}`}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                  <div style={{width:38,height:38,borderRadius:10,background:`${m.color}15`,border:`1px solid ${m.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{m.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:14,color:m.color}}>{m.macro}</div>
+                    <div style={{fontSize:10,color:C.faint}}>{m.kcalPg} kcal / gramme</div>
+                  </div>
+                </div>
+                <div style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:10}}>{m.role}</div>
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:10,fontWeight:600,color:C.text,marginBottom:6,textTransform:"uppercase",letterSpacing:0.5}}>Sources principales</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                    {m.sources.map(s=>(
+                      <span key={s} style={{fontSize:10,color:m.color,background:`${m.color}12`,border:`1px solid ${m.color}30`,borderRadius:20,padding:"2px 9px"}}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{fontSize:11,color:C.faint,fontStyle:"italic",borderTop:`1px solid ${C.border}`,paddingTop:8}}>💡 {m.tip}</div>
+              </Card>
+            ))}
+
+            <div style={{height:1,background:C.border,margin:"16px 0"}}/>
+            <div style={{fontSize:13,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+              <span>📋</span> Règles clés
+            </div>
+            {NUTRI_RULES.map((r,i)=>(
+              <Card key={i} style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+                <div style={{width:40,height:40,borderRadius:10,background:C.surface2,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{r.icon}</div>
+                <div><div style={{fontSize:13,fontWeight:600,marginBottom:5}}>{r.title}</div><div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>{r.desc}</div></div>
+              </Card>
+            ))}
+            <div style={{display:"flex",gap:10,marginTop:6}}>
+              {[
+                {label:"✓ Favoris",color:C.good,items:["Poulet / dinde","Œufs","Skyr","Flocons d'avoine","Riz basmati","Patate douce","Brocolis","Saumon","Thon naturel"]},
+                {label:"✗ À limiter",color:C.danger,items:["Alcool","Pain blanc","Sodas","Sauces industrielles","Fromages gras","Charcuterie","Snacks transformés"]},
+              ].map(col=>(
+                <div key={col.label} style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:14}}>
+                  <div style={{fontSize:12,fontWeight:600,color:col.color,marginBottom:10}}>{col.label}</div>
+                  {col.items.map((it,i)=>(
+                    <div key={i} style={{fontSize:12,color:C.muted,padding:"6px 0",borderBottom:i<col.items.length-1?`1px solid ${C.border}`:"none"}}>{it}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </>)}
+        </>)}
+
+        {/* ── STATS ── */}
+        {tab==="stats"&&(<>
+          <Card>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontSize:13,color:C.muted}}>Score de la semaine</div>
+              <div style={{fontSize:28,fontWeight:800,color:sCol(gs)}}>{gs}<span style={{fontSize:14,fontWeight:400,color:C.faint}}>%</span></div>
+            </div>
+            <div style={{height:6,background:C.border,borderRadius:3,overflow:"hidden",marginBottom:8}}>
+              <div style={{height:"100%",width:`${gs}%`,background:`linear-gradient(90deg,${sCol(gs)},${sCol(gs)}99)`,borderRadius:3,transition:"width 0.5s"}}/>
+            </div>
+            <div style={{fontSize:12,color:C.faint}}>{gs<30?"💤 Démarre le moteur.":gs<60?"🔥 Tu avances, pousse encore.":gs<85?"🚀 Excellente semaine, finis fort.":"🏆 Semaine de champion."}</div>
+          </Card>
+
+          <Card>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:700}}>📈 Historique</div>
+                <div style={{fontSize:11,color:C.faint,marginTop:2}}>6 dernières semaines · survole pour le détail</div>
+              </div>
+              {(()=>{
+                const wd=history.filter(h=>h.global>0);
+                if(wd.length<2) return null;
+                const avg=Math.round(wd.reduce((a,h)=>a+h.global,0)/wd.length);
+                const trend=wd.at(-1).global-wd.at(-2).global;
+                return(
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:C.accent}}>{avg}%</div>
+                    <div style={{fontSize:10,color:trend>=0?C.good:C.danger}}>{trend>=0?"↑":"↓"} {Math.abs(trend)}% vs sem. −1</div>
+                  </div>
+                );
+              })()}
+            </div>
+            <MultiWeekChart history={history}/>
+          </Card>
+
+          {PILLARS.map(p=>{
+            const cnt=pCount(p.id),pct=Math.round(Math.min(cnt/p.target,1)*100);
+            return(
+              <Card key={p.id}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:36,height:36,borderRadius:10,background:`${p.color}15`,border:`1px solid ${p.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{p.icon}</div>
+                    <div><Tag color={p.color}>{p.label}</Tag><div style={{fontSize:10,color:C.faint,marginTop:4}}>{cnt}/{p.target} {p.unit}s</div></div>
+                  </div>
+                  <div style={{fontSize:22,fontWeight:800,color:pct>=80?p.color:C.faint}}>{pct}%</div>
+                </div>
+                <div style={{height:4,background:C.border,borderRadius:2,overflow:"hidden",marginBottom:10}}>
+                  <div style={{height:"100%",width:`${pct}%`,background:p.color,borderRadius:2,transition:"width 0.5s"}}/>
+                </div>
+                <div style={{display:"flex",gap:5}}>
+                  {DAYS.map((d,i)=>{
+                    const any=p.id==="sport"?sportCount(i)>0:p.slots.some(s=>chk(i,p.id,s));
+                    return(
+                      <div key={d} style={{flex:1,textAlign:"center"}}>
+                        <div style={{height:5,borderRadius:3,background:any?p.color:C.border,marginBottom:4}}/>
+                        <div style={{fontSize:8,color:C.faint}}>{d}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            );
+          })}
+
+          {/* To-Do */}
+          <TodoList todos={todos} setTodos={setTodosP}/>
+
+          {/* Poids */}
+          <Card>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:14,fontWeight:600}}>⚖️ Suivi Poids</div>
+              <Tag color={C.nutri}>Objectif 82 kg</Tag>
+            </div>
+            {!startWeight?(
+              <>
+                <div style={{fontSize:12,color:C.muted,marginBottom:10}}>Entre ton poids de départ :</div>
+                <div style={{display:"flex",gap:8}}>
+                  <input type="number" placeholder="Ex: 97" value={newWeight} onChange={e=>setNewWeight(e.target.value)} style={inputSt}/>
+                  <button onClick={()=>{if(newWeight){setSW(parseFloat(newWeight));setNewWeight("");}}} style={btnSt(C.nutri)}>Départ</button>
+                </div>
+              </>
+            ):(
+              <>
+                <div style={{display:"flex",gap:8,marginBottom:14}}>
+                  {[
+                    {label:"Départ",val:`${startWeight} kg`,color:C.muted},
+                    {label:"Actuel",val:Object.values(weights).length>0?`${Object.values(weights).at(-1)} kg`:"—",color:C.nutri},
+                    {label:"Δ Total",val:Object.values(weights).length>0?`${(Object.values(weights).at(-1)-startWeight).toFixed(1)} kg`:"—",
+                      color:Object.values(weights).length>0&&Object.values(weights).at(-1)<=82?C.good:C.warn},
+                  ].map(k=>(
+                    <div key={k.label} style={{flex:1,background:C.surface2,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${C.border}`}}>
+                      <div style={{fontSize:14,fontWeight:700,color:k.color}}>{k.val}</div>
+                      <div style={{fontSize:9,color:C.faint,marginTop:3}}>{k.label}</div>
+                    </div>
+                  ))}
+                </div>
+                {Object.values(weights).length>0&&(()=>{
+                  const cur=Object.values(weights).at(-1), ok=cur<=82;
+                  const restant=(cur-82).toFixed(1);
+                  return(
+                    <div style={{padding:"10px 14px",background:`${ok?C.good:C.warn}12`,border:`1px solid ${ok?C.good:C.warn}35`,borderRadius:10,fontSize:12,color:ok?C.good:C.warn,marginBottom:12}}>
+                      {ok?`🎯 Objectif atteint ! Tu es à ${cur} kg.`:`⚡ Plus que ${restant} kg à perdre pour atteindre 82 kg.`}
+                    </div>
+                  );
+                })()}
+                <div style={{display:"flex",gap:8,marginBottom:12}}>
+                  <input type="number" placeholder="Poids du jour..." value={newWeight} onChange={e=>setNewWeight(e.target.value)} style={inputSt}/>
+                  <button onClick={()=>{if(newWeight){const t=DAYS[new Date().getDay()===0?6:new Date().getDay()-1];setW(p=>({...p,[t]:parseFloat(newWeight)}));setNewWeight("");}}} style={btnSt(C.nutri)}>Log</button>
+                </div>
+                <div style={{display:"flex",gap:5,marginBottom:10}}>
+                  {DAYS.map(d=>(
+                    <div key={d} style={{flex:1,textAlign:"center"}}>
+                      <div style={{height:36,background:weights[d]?C.nutri:C.surface2,borderRadius:8,marginBottom:4,display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${weights[d]?C.nutri:C.border}`}}>
+                        {weights[d]&&<span style={{fontSize:8,color:"#fff",fontWeight:700}}>{weights[d]}</span>}
+                      </div>
+                      <div style={{fontSize:8,color:C.faint}}>{d}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontSize:11,color:C.faint,marginBottom:12}}>Pesée le matin à jeun, mêmes conditions.</div>
+                <button onClick={()=>{setSW(null);setW(()=>({}));}} style={ghostBtn}>↺ Réinitialiser</button>
+              </>
+            )}
+          </Card>
+
+          {/* Épargne */}
+          <Card>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:14,fontWeight:600}}>💎 Épargne du mois</div>
+              <Tag color={C.epargne}>500 € / mois</Tag>
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:14}}>
+              <input type="number" placeholder="Montant épargné..." value={newSaving} onChange={e=>setNewSaving(e.target.value)} style={inputSt}/>
+              <button onClick={()=>{if(newSaving){setSv(p=>({...p,saved:p.saved+parseFloat(newSaving)}));setNewSaving("");}}} style={btnSt(C.epargne)}>+ Add</button>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6}}>
+              <span style={{color:C.muted}}>Épargné</span><span style={{fontWeight:700,color:C.epargne}}>{savings.saved} €</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:12}}>
+              <span style={{color:C.muted}}>Objectif</span><span style={{color:C.text}}>{savings.target} €</span>
+            </div>
+            <div style={{height:8,background:C.surface2,borderRadius:4,overflow:"hidden",marginBottom:8,border:`1px solid ${C.border}`}}>
+              <div style={{height:"100%",width:`${Math.min(savings.saved/savings.target*100,100)}%`,background:`linear-gradient(90deg,${C.epargne},${C.good})`,borderRadius:4,transition:"width 0.5s"}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:11,color:C.faint}}>Reste : {Math.max(savings.target-savings.saved,0)} € · {Math.round(Math.min(savings.saved/savings.target*100,100))}%</span>
+              <button onClick={()=>setSv(()=>({target:500,saved:0}))} style={ghostBtn}>↺ Nouveau mois</button>
+            </div>
+          </Card>
+        </>)}
+      </div>
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
