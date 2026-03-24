@@ -1,43 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="Mon Système"/>
-  <meta name="theme-color" content="#D97706"/>
-  <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAD9UlEQVR4nO3cwXHcMBBE0ZEPciZKUQ5BKcqZ6OYDVSwYWmBBYkAQPf9FwMOvBsit2pfP91cDHvk1+wFwX8SBIuJAEXGgiDhQRBwoIg4UEQeKiANFxOHm7eNr9iM4Iw4fbx9ff//8nv0UzogDRcThQHI2jDhQQRy9VGfDiKOT3htKijh6qc6GEUcP7dkw4ugkPBtGHKfJz4YRxzlbGdqzYcSBCuI4LMhsGHGggjiOiTMbRhyHRHhDSRHHYUFmw4ijXagDZUMcKCKOJgFnw4ijRbR76I44WkWbDSOOp8LOhhFHo4CzYcRRF3k2jDgq9jJizoYRByqI4zFmw4gDFcTxALOxIY5c8DeUFHEUBZ8NI44Ms5EijseYDSOOFPfQDHF840D5iThyzMaOOMyYjQLi+A+zkSIOZqMoehxpGcxGJnocqAgdB7NRFzoO1MWNg9l4KmgcvKG0CBpHitkoiRgHs9EoYhwpZqMiXBzMRrtYcWRlMBt1seJIUcZTgeLgQDkqUBwpZqNFlDiYjRNCxME99JwQceAc/TiYjdP048Bp4nEwGz2U4+ANpZNyHBlm4yjZOJiNfrJxZJiNEzTjYDZcCMbxswxm4xzBOOBFLQ5mw5FaHBnK6CEVB/dQXzpxcKC404kD7kTiYDZGEIkDI7x8vr/OfoZeQ++hkRdIIY6MYyuRyzC9Y4W3WUdqcTgKPhsmFgez4UsqDkfMhinFwWy404nDEbOxEYmD2RhBJA5HzMZO4SMYX0gHUYjDC7/eZThWUEQc35iNn4gDRcRhxmwUEMcDlLEhDj6gFUWPgwOlInocqAgdB7NRFzqODGVk4sbBPfSpuHFkmI2fgsbBbLQIGkeG2XgoYhz8c22jiHGgUbg4mI124eJAu1hxMBuHxIojRRlPBYqDbxtHBYojxWy0iBIHs3FCiDi4h54TIo4UZbTTj4MD5TT9OFLMxiHicTAbPcTjSDEbRynHkc4GZZygHAc6ycbBbPSTjQP9NONgNlxoxrGjjB6CcfBtw4tgHDtmo5NaHMyGI7U4dsxGP6k49tmgDBc6cXCguNOJY8dseBGJg9kYQSSOHbPhSCEO7qGDKMSBQZaPg9kYZ/k4MM7acTAbQ60dx4YyBlk4Dr5tjLZwHBtmY5xV42A2LrBqHBtmY6gl49hmgzJGWzIOXGO9OJiNyywWB/fQKy0Wx4bZuMZKcXCgXGylOHCxZeJgNq63TBy43hpxMBtTrBGHUcYMC8TBt41ZFojDmI1J7h4HszHR3eMwZmOeW8fx9vFFGRPdOg7Mdd84mI3p7hsHprtpHMzGHbx8vr/Ofgbc1E2XA3dAHCgiDhQRB4qIA0XEgSLiQBFxoOgfe0scHXph0FgAAAAASUVORK5CYII="/>
-  <title>Mon Système ⚡</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    body { background:#FAF9F7; font-family:system-ui,-apple-system,sans-serif; }
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Mon Système"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23FAF9F7'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%23D97706'>⚡</text></svg>"/>
+<title>Mon Système ⚡</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,sans-serif;background:#FAF9F7;-webkit-font-smoothing:antialiased}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-thumb{background:#E7E4DF;border-radius:4px}
+</style>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+// localStorage polyfill matching window.storage API
+window.storage={
+  async set(k,v){try{localStorage.setItem('ms_'+k,v);return{key:k,value:v};}catch(e){return null;}},
+  async get(k){try{const v=localStorage.getItem('ms_'+k);if(v===null)throw new Error('not found');return{key:k,value:v};}catch(e){throw e;}},
+  async delete(k){try{localStorage.removeItem('ms_'+k);return{key:k,deleted:true};}catch(e){return null;}},
+  async list(prefix){try{const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('ms_')&&(!prefix||k.slice(3).startsWith(prefix)))keys.push(k.slice(3));}return{keys};}catch(e){return{keys:[]};}}
+};
+</script>
 </head>
 <body>
-  <div id="root"></div>
-  <script>
-    window.storage = {
-      set: async (key, value) => { localStorage.setItem(key, value); return { key, value }; },
-      get: async (key) => {
-        const value = localStorage.getItem(key);
-        if (value === null) throw new Error('Key not found: ' + key);
-        return { key, value };
-      },
-      delete: async (key) => { localStorage.removeItem(key); return { key, deleted: true }; },
-      list: async (prefix) => {
-        prefix = prefix || '';
-        const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
-        return { keys, prefix };
-      }
-    };
-  </script>
-  <script type="text/babel">
-    const { useState, useEffect, useCallback } = React;
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useCallback}=React;
+
 
 
 const C = {
@@ -52,14 +48,14 @@ const DAYS      = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const FULL_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
 const PILLARS = [
-  { id:"sport",     label:"Sport",      icon:"⚡", color:C.sport,    unit:"séance",    target:6, slots:["matin","soir"], types:["Crossfit","Trail","Rugby","Autre"], tip:"Trail Lun+Mar+Jeu · Crossfit Mer+Ven+Dim · Rugby Lun soir." },
+  { id:"sport",     label:"Sport",      icon:"⚡", color:C.sport,    unit:"séance",    target:6, slots:["matin","soir"], types:["Crossfit","Trail","Rugby","Autre"], tip:"Trail Lun(midi)+Mar(av8h)+Jeu(av8h) · Crossfit Mer+Ven(midi)+Dim(av8h) · Rugby Lun soir." },
   { id:"nutrition", label:"Nutrition",  icon:"🎯", color:C.nutri,    unit:"jour clean", target:6, slots:["matin","midi","soir"], tip:"6 jours propres/7 = perte de poids durable sans frustration." },
   { id:"sobriete",  label:"Sobriété",   icon:"🚭", color:"#E11D48",  unit:"jour clean", target:7, slots:["no-cig","no-alc"], tip:"Sans cigarette ni alcool = récupération, sommeil et énergie au max." },
-  { id:"yoga",      label:"Yoga",       icon:"🧘", color:"#0891B2",  unit:"séance",    target:5, slots:["fait"], tip:"soir après le travail. 30 min = flexibilité et récupération." },
-  { id:"meditation",label:"Méditation", icon:"🌿", color:"#059669",  unit:"session",   target:5, slots:["fait"], tip:"20 min/jour = meilleure concentration et récupération." },
-  { id:"lecture",   label:"Lecture",    icon:"📖", color:C.lecture,  unit:"session",   target:6, slots:["lu"],  tip:"en soirée. 30–60 min = 12 livres/an minimum." },
-  { id:"langue",    label:"Langue",     icon:"🗣️", color:"#C026D3",  unit:"session",   target:5, slots:["fait"], tip:"20 min/jour d'espagnol = niveau B2 en 18 mois." },
-  { id:"poker",     label:"Poker",      icon:"♠️", color:"#B45309",  unit:"session",   target:3, slots:["fait"], tip:"3 sessions/sem = amélioration continue du jeu et bankroll." },
+  { id:"yoga",      label:"Yoga",       icon:"🧘", color:"#0891B2",  unit:"séance",    target:5, slots:["fait"], tip:"Lun+Mar+Jeu+Ven+Dim soir après le travail. 30 min = flexibilité et récupération." },
+  { id:"meditation",label:"Méditation", icon:"🌿", color:"#059669",  unit:"session",   target:5, slots:["fait"], tip:"Lun+Mar+Jeu+Ven+Dim. 20 min = meilleure concentration et récupération." },
+  { id:"lecture",   label:"Lecture",    icon:"📖", color:C.lecture,  unit:"session",   target:6, slots:["lu"],  tip:"Lun+Mar+Mer+Jeu+Ven+Sam en soirée. 30–60 min = 12 livres/an minimum." },
+  { id:"langue",    label:"Langue",     icon:"🗣️", color:"#C026D3",  unit:"session",   target:5, slots:["fait"], tip:"Mar+Mer+Jeu+Sam+Dim. 15 min/jour d'espagnol = niveau B2 en 18 mois." },
+  { id:"poker",     label:"Poker",      icon:"♠️", color:"#B45309",  unit:"session",   target:3, slots:["fait"], tip:"Mer+Ven+Dim. 3 sessions/sem = amélioration continue du jeu et bankroll." },
   { id:"epargne",   label:"Épargne",    icon:"💎", color:C.epargne,  unit:"action",    target:1, slots:["done"], tip:"Pour Surf et Voile 🏄‍♂️⛵ — 500€/mois." },
 ];
 
@@ -68,107 +64,93 @@ const SCHEDULE = [
   { time:"07:00–07:20", label:"Lecture",             slot:"matin", pillar:"lecture" },
   { time:"07:20–07:40", label:"Petit-déj clean",    slot:"matin", pillar:"nutrition" },
   { time:"19:00–19:30", label:"Sport ou mobilité",  slot:"soir",  pillar:"sport", optional:true },
-  { time:"20:00–20:20", label:"Lecture ",    slot:"soir",  pillar:"lecture" },
+  { time:"20:00–20:20", label:"Lecture (suite)",    slot:"soir",  pillar:"lecture" },
+  { time:"21:00–21:15", label:"Bilan finances",     slot:"soir",  pillar:"epargne" },
+  { time:"21:15–21:30", label:"Repas / bilan nutri",slot:"soir",  pillar:"nutrition" },
 ];
 
 const DAY_SCHEDULE = {
   // LUNDI — Télétravail
-  0: { type:"Télétravail 🏠", color:"#2563EB", note:"Trail + Rugby + Yoga + Lecture en soirée.",
+  0: { type:"Télétravail 🏠", color:"#2563EB", note:"Trail sur la pause déj. Récupération Constance. Rugby + Yoga + Lecture en soirée.",
     blocs:[
-      {time:"7h30–8h",     label:"Petit-déj + tâche^s", pillar:"nutrition",      icon:"🥗"},
-      {time:"8h–12h",   label:"TT", pillar:null,                                 icon:"💻"},
-      {time:"12h–13h30",   label:"Trail + promenade Linette 🐕", pillar:"sport", icon:"🏃"},
-      {time:"13h30–14h",     label:"Déj", pillar:"nutrition",                    icon:"🥗"},
-      {time:"14h–17h",   label:"TT", pillar:null,                                icon:"💻"},
-      {time:"17h–19h",   label:"Constance", pillar:null,                         icon:"👶"},
-      {time:"19h–21h",   label:"Rugby", pillar:"sport",                          icon:"🏉"},
-      {time:"21h30-22h",     label:"Diner", pillar:"nutrition",                  icon:"🥗"},
-      {time:"22h–22h30", label:"Lecture", pillar:"lecture",                      icon:"📖"},
+      {time:"Av 8h",     label:"Constance / famille", pillar:null,                 icon:"👨‍👧"},
+      {time:"08h–12h",   label:"Travail (Accenture / Michelin)", pillar:null,       icon:"💻"},
+      {time:"12h–14h",   label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"14h–17h",   label:"Travail", pillar:null,                              icon:"💻"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Rugby toucher 🏉", pillar:"sport",                  icon:"🏉"},
+      {time:"21h–22h30", label:"Yoga 30min + Méditation 20min + Lecture", pillar:"yoga", icon:"🧘"},
     ]},
 
   // MARDI — Sur site
   1: { type:"Sur site 🏢", color:"#7C3AED", note:"Trail avant 8h. Récupération Constance 17h. Yoga + méditation + langue + lecture en soirée.",
     blocs:[
-      {time:"6h15–6h45",     label:"Trail + promenade Linette 🐕", pillar:"sport",   icon:"🏃"},
-      {time:"6h45–7h30",     label:"Petit-déj + préparation", pillar:"nutrition",    icon:"🥗"},
-      {time:"7h30h–12h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
-      {time:"12h–13h",     label:"Déj", pillar:"nutrition",                          icon:"🥗"},
-      {time:"13h–17h",   label:"Travail sur site", pillar:null,                      icon:"🏭"},
-      {time:"17h–20h",   label:"Constance + diner", pillar:"nutrition",                icon:"👶+🥗"},
-      {time:"20h50–21h10",   label:"Langue", pillar:"langue",                        icon:"🗣️"},
-      {time:"21h10–21h40", label:"Yoga", pillar:"yoga",                              icon:"🧘"},
-      {time:"21h40–22h", label:"Méditation", pillar:"meditation",                    icon:"🌿"},
-      {time:"22h–22h30", label:"Lecture", pillar:"lecture",                          icon:"📖"},
+      {time:"Av 8h",     label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
     ]},
 
-  // MERCREDI — Sur site
-  2: { type:"Sur site 🏢", color:"#059669", note:"Crossfit + Langue + poker + lecture en soirée.",
+  // MERCREDI — Sur site (Constance chez beaux-parents)
+  2: { type:"Sur site 🏢 — Constance chez beaux-parents", color:"#059669", note:"Constance prise en charge le matin. Crossfit 17h-19h. Langue + poker + lecture en soirée.",
     blocs:[
-      {time:"6h45–7h30",     label:"Petit-déj + préparation", pillar:"nutrition",    icon:"🥗"},
-      {time:"7h30h–12h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
-      {time:"12h–13h",     label:"Déj + Badminton", pillar:"nutrition",              icon:"🥗"},
-      {time:"13h–17h",   label:"Travail sur site", pillar:null,                      icon:"🏭"},
-      {time:"17h–19h",   label:"Constance + Linette 🐕", pillar:null,                icon:"👶"},
-      {time:"19h–20h",   label:"Crossfit", pillar:"sport",                           icon:"🏋️"},
-      {time:"20h-21h",     label:"Diner", pillar:"nutrition",                        icon:"🥗"},
-      {time:"21h–21h15",   label:"Langue", pillar:"langue",                          icon:"🗣️"},
-      {time:"21h15–22h00", label:"Poker", pillar:"poker",                            icon:"♠️"},
-      {time:"22h–22h30", label:"Lecture", pillar:"lecture",                          icon:"📖"},
+      {time:"Av 8h",     label:"Constance / famille (beaux-parents)", pillar:null,  icon:"👨‍👧"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"19h–21h",   label:"Langue — espagnol 15min", pillar:"langue",         icon:"🗣️"},
+      {time:"21h–22h30", label:"Poker 45min + Lecture", pillar:"poker",            icon:"♠️"},
     ]},
 
   // JEUDI — Sur site
-  3: { type:"Sur site 🏢", color:"#7C3AED", note:"Trail avant 8h. Récupération Constance 17h. Yoga + méditation + langue + lecture en soirée.",
+  3: { type:"Sur site 🏢", color:"#EA580C", note:"Trail avant 8h. Récupération Constance 17h. Yoga + méditation + langue + lecture en soirée.",
     blocs:[
-      {time:"6h15–6h45",     label:"Trail + promenade Linette 🐕", pillar:"sport",   icon:"🏃"},
-      {time:"6h45–7h30",     label:"Petit-déj + préparation", pillar:"nutrition",    icon:"🥗"},
-      {time:"7h30h–12h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
-      {time:"12h–13h",     label:"Déj", pillar:"nutrition",                          icon:"🥗"},
-      {time:"13h–17h",   label:"Travail sur site", pillar:null,                      icon:"🏭"},
-      {time:"17h–20h",   label:"Constance + diner", pillar:"nutrition",                icon:"👶+🥗"},
-      {time:"20h50–21h10",   label:"Langue", pillar:"langue",                        icon:"🗣️"},
-      {time:"21h10–21h40", label:"Yoga", pillar:"yoga",                              icon:"🧘"},
-      {time:"21h40–22h", label:"Méditation", pillar:"meditation",                    icon:"🌿"},
-      {time:"22h–22h30", label:"Lecture", pillar:"lecture",                          icon:"📖"},
+      {time:"Av 8h",     label:"Trail + promenade Linette 🐕", pillar:"sport",     icon:"🏃"},
+      {time:"08h–11h30", label:"Travail sur site (Ladoux)", pillar:null,            icon:"🏭"},
+      {time:"12h–14h",   label:"Déjeuner", pillar:"nutrition",                     icon:"🥗"},
+      {time:"14h–17h",   label:"Travail sur site", pillar:null,                    icon:"🏭"},
+      {time:"17h–19h",   label:"Récupération Constance 👶", pillar:null,            icon:"👨‍👧"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
     ]},
 
-  // VENDREDI — Télétravail
-  4: { type:"Télétravail 🏠 ", color:"#D97706", note:"CCrossfit sur la pause déj. Promenade 17h. Yoga + Poker en soirée.",
+  // VENDREDI — Télétravail (Madeline s'occupe de Constance)
+  4: { type:"Télétravail 🏠 — Madeline s'occupe de Constance", color:"#D97706", note:"Constance avec Madeline le matin. Crossfit sur la pause déj. Promenade 17h. Yoga + Poker en soirée.",
     blocs:[
-      {time:"8h30",   label:"Constance crèche", pillar:null,         icon:"👶"},
-      {time:"8h–12h",   label:"TT", pillar:null,                     icon:"💻"},
-      {time:"12h–13h",   label:"Crossfit", pillar:"sport",           icon:"🏋️"},
-      {time:"13h–14h",     label:"Déj", pillar:"nutrition",          icon:"🥗"},
-      {time:"14h–17h",   label:"Travail", pillar:null,               icon:"💻"},
-      {time:"17h–19h",   label:"Constance + Linette 🐕", pillar:null,icon:"👶"},
-      {time:"19h-19h30", label:"Yoga", pillar:"yoga",                icon:"🧘"},
-      {time:"19h30–19h50", label:"Méditation", pillar:"meditation",  icon:"🌿"},
-      {time:"20h-21h",   label:"Diner", pillar:"nutrition",            icon:"🥗"},      
-      {time:"21h–22h", label:"Poker ", pillar:"poker",               icon:"♠️"},
+      {time:"Av 8h",     label:"Constance avec Madeline", pillar:null,             icon:"👨‍👧"},
+      {time:"08h–12h",   label:"Travail (Accenture / Michelin)", pillar:null,       icon:"💻"},
+      {time:"12h–14h",   label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"14h–17h",   label:"Travail", pillar:null,                              icon:"💻"},
+      {time:"17h–19h",   label:"Promenade Linette 🐕", pillar:null,                icon:"🐕"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min", pillar:"yoga",     icon:"🧘"},
+      {time:"21h–22h30", label:"Poker 45–60min", pillar:"poker",                   icon:"♠️"},
     ]},
 
   // SAMEDI
-  5: { type:"Week-end 🌅", color:"#0891B2", note:"Langue fin d'après-midi. Lecture en soirée.",
+  5: { type:"Week-end 🌅", color:"#0891B2", note:"Langue fin d'après-midi. Lecture en soirée. Journée famille.",
     blocs:[
-      {time:"matin",   label:"Petit-déj", pillar:"nutrition",                      icon:"🥗"},
-      {time:"matin",   label:"Maison", pillar:null,                              icon:""},  
-      {time:"midi",   label:"Déj", pillar:"nutrition",                             icon:"🥗"},  
-      {time:"matin",     label:"Trail + promenade Linette 🐕", pillar:"sport",   icon:"🏃"},
-      {time:"fin après-midi",   label:"Langue", pillar:"langue",                 icon:"🗣️"},
-      {time:"fin après-midi", label:"Yoga", pillar:"yoga",                       icon:"🧘"},
-      {time:"fin après-midi", label:"Méditation", pillar:"meditation",           icon:"🌿"},
-      {time:"soirée", label:"Lecture", pillar:"lecture",                         icon:"📖"},
+      {time:"08h–12h",   label:"Matinée libre — famille / repos", pillar:null,     icon:"🏠"},
+      {time:"12h–14h",   label:"Déjeuner famille", pillar:"nutrition",             icon:"🥗"},
+      {time:"14h–17h",   label:"Temps famille / promenade Linette", pillar:null,   icon:"🏠"},
+      {time:"17h–19h",   label:"Langue — espagnol 🗣️", pillar:"langue",            icon:"🗣️"},
+      {time:"19h–21h",   label:"Temps libre / famille", pillar:null,               icon:"🏠"},
+      {time:"21h–22h30", label:"Lecture", pillar:"lecture",                        icon:"📖"},
     ]},
 
   // DIMANCHE
   6: { type:"Récupération 🌿", color:"#059669", note:"Crossfit le matin. Poker 17h. Yoga + méditation + langue 19h. Cinéma + pizza en soirée 🍕",
     blocs:[
-      {time:"matin",   label:"Petit-déj", pillar:"nutrition",            icon:"🥗"},
-      {time:"matin",     label:"Crossfit ", pillar:"sport",            icon:"🏋️"},
-      {time:"midi",   label:"Déj", pillar:"nutrition",                   icon:"🥗"},  
-      {time:"fin après-midi", label:"Yoga", pillar:"yoga",             icon:"🧘"},
-      {time:"fin après-midi", label:"Méditation", pillar:"meditation", icon:"🌿"},
-      {time:"fin après-midi",   label:"Poker ", pillar:"poker",        icon:"♠️"},
-      {time:"soirée", label:"Cinéma + Pizza maison", pillar:null,      icon:"🎬+🍕"},
+      {time:"Av 8h",     label:"Crossfit box Kanda 🏋️", pillar:"sport",           icon:"🏋️"},
+      {time:"08h–12h",   label:"Matinée famille / grasse mat'", pillar:null,       icon:"🏠"},
+      {time:"12h–14h",   label:"Déjeuner en famille", pillar:"nutrition",           icon:"🥗"},
+      {time:"14h–17h",   label:"Temps famille / repos", pillar:null,                icon:"🏠"},
+      {time:"17h–19h",   label:"Poker ♠️", pillar:"poker",                         icon:"♠️"},
+      {time:"19h–21h",   label:"Yoga 30min + Méditation 20min + Langue 15min", pillar:"yoga", icon:"🧘"},
+      {time:"21h–22h30", label:"🎬 Cinéma + 🍕 Pizza maison", pillar:null,         icon:"🍕"},
     ]},
 };
 const QUOTES = [
@@ -179,105 +161,143 @@ const QUOTES = [
   "Chaque case cochée prouve que tu tiens tes engagements.",
 ];
 
-const MACROS_TARGET = { kcal:1700, proteines:150, glucides:160, lipides:50 };
+const MACROS_TARGET = { kcal:1800, proteines:150, glucides:170, lipides:55 };
 
-const MEALS = {
-  matin:{ label:"Petit-déjeuner", icon:"☀️", time:"07:00", color:"#D97706",
-    options:[
-      { nom:"Option A — Protéiné classique", aliments:[
-        {nom:"Flocons d'avoine",qte:"60g",kcal:220,p:7,g:38,l:4},
-        {nom:"Œufs entiers",qte:"2",kcal:140,p:12,g:1,l:10},
-        {nom:"Blanc d'œuf",qte:"2",kcal:34,p:8,g:0,l:0},
-        {nom:"Fruits rouges",qte:"80g",kcal:30,p:0,g:7,l:0},
-      ]},
-      { nom:"Option B — Rapide (< 5 min)", aliments:[
-        {nom:"Skyr nature",qte:"200g",kcal:120,p:20,g:8,l:0},
-        {nom:"Banane",qte:"1 moyenne",kcal:90,p:1,g:23,l:0},
-        {nom:"Amandes",qte:"15g",kcal:90,p:3,g:2,l:8},
-      ]},
-      { nom:"Option C — Pancakes protéinés", aliments:[
-        {nom:"Flocons d'avoine mixés",qte:"80g",kcal:290,p:10,g:50,l:5},
-        {nom:"Œuf entier",qte:"1",kcal:70,p:6,g:0,l:5},
-        {nom:"Skyr",qte:"100g",kcal:60,p:10,g:4,l:0},
-        {nom:"Miel",qte:"1 c.à.c",kcal:25,p:0,g:6,l:0},
-      ]},
-      { nom:"Option D — Bowl méditerranéen", aliments:[
-        {nom:"Pain complet",qte:"2 tranches",kcal:140,p:6,g:26,l:2},
-        {nom:"Œufs brouillés",qte:"3",kcal:210,p:18,g:1,l:15},
-        {nom:"Tomates cerises",qte:"80g",kcal:16,p:1,g:3,l:0},
-        {nom:"Feta émiettée",qte:"20g",kcal:50,p:3,g:0,l:4},
-      ]},
-    ]},
-  midi:{ label:"Déjeuner", icon:"🥗", time:"12:30", color:"#EA580C",
-    options:[
-      { nom:"Option A — Complet équilibré", aliments:[
-        {nom:"Poulet grillé",qte:"150g",kcal:165,p:31,g:0,l:4},
-        {nom:"Riz basmati",qte:"120g cuit",kcal:156,p:3,g:34,l:0},
-        {nom:"Brocolis vapeur",qte:"200g",kcal:68,p:6,g:10,l:0},
-        {nom:"Huile d'olive",qte:"1 c. à soupe",kcal:90,p:0,g:0,l:10},
-      ]},
-      { nom:"Option B — Batch cooking rapide", aliments:[
-        {nom:"Thon naturel",qte:"130g",kcal:130,p:29,g:0,l:1},
-        {nom:"Pâtes complètes",qte:"150g cuites",kcal:210,p:7,g:42,l:1},
-        {nom:"Tomates cerises",qte:"100g",kcal:20,p:1,g:4,l:0},
-        {nom:"Feta",qte:"30g",kcal:75,p:4,g:1,l:6},
-      ]},
-      { nom:"Option C — Buddha bowl", aliments:[
-        {nom:"Quinoa cuit",qte:"150g",kcal:180,p:7,g:32,l:3},
-        {nom:"Pois chiches rôtis",qte:"80g",kcal:130,p:7,g:20,l:3},
-        {nom:"Avocat",qte:"½",kcal:120,p:1,g:6,l:11},
-        {nom:"Légumes grillés",qte:"150g",kcal:60,p:2,g:10,l:1},
-      ]},
-      { nom:"Option D — Wrap protéiné", aliments:[
-        {nom:"Tortilla complète",qte:"1",kcal:120,p:4,g:20,l:3},
-        {nom:"Dinde tranchée",qte:"100g",kcal:110,p:22,g:0,l:2},
-        {nom:"Fromage blanc 0%",qte:"50g",kcal:25,p:4,g:2,l:0},
-        {nom:"Crudités mélangées",qte:"100g",kcal:25,p:1,g:5,l:0},
-      ]},
-    ]},
-  collation:{ label:"Collation", icon:"⚡", time:"16:30", color:"#2563EB",
-    options:[
-      { nom:"Option A — Pré-workout", aliments:[
-        {nom:"Fromage blanc 0%",qte:"150g",kcal:75,p:13,g:5,l:0},
-        {nom:"Banane",qte:"1 petite",kcal:70,p:1,g:18,l:0},
-      ]},
-      { nom:"Option B — Légère", aliments:[
-        {nom:"Œufs durs",qte:"2",kcal:140,p:12,g:1,l:10},
-        {nom:"Concombre",qte:"libre",kcal:15,p:1,g:2,l:0},
-      ]},
-      { nom:"Option C — Énergétique", aliments:[
-        {nom:"Skyr fruits rouges",qte:"150g",kcal:90,p:13,g:9,l:0},
-        {nom:"Noix de cajou",qte:"20g",kcal:115,p:4,g:6,l:9},
-      ]},
-      { nom:"Option D — Express", aliments:[
-        {nom:"Shake protéiné",qte:"1 dose",kcal:120,p:25,g:5,l:2},
-        {nom:"Pomme",qte:"1",kcal:70,p:0,g:18,l:0},
-      ]},
-    ]},
-  soir:{ label:"Dîner", icon:"🌙", time:"20:00", color:"#7C3AED",
-    options:[
-      { nom:"Option A — Digeste & protéiné", aliments:[
-        {nom:"Saumon vapeur",qte:"130g",kcal:260,p:26,g:0,l:17},
-        {nom:"Patate douce",qte:"150g rôtie",kcal:130,p:2,g:30,l:0},
-        {nom:"Salade verte",qte:"libre",kcal:15,p:1,g:2,l:0},
-      ]},
-      { nom:"Option B — Léger (sans sport)", aliments:[
-        {nom:"Omelette",qte:"3 œufs",kcal:210,p:18,g:1,l:15},
-        {nom:"Légumes poêlés",qte:"200g",kcal:60,p:3,g:10,l:1},
-        {nom:"Pain complet",qte:"1 tranche",kcal:70,p:3,g:13,l:1},
-      ]},
-      { nom:"Option C — Poisson blanc", aliments:[
-        {nom:"Cabillaud au four",qte:"150g",kcal:130,p:28,g:0,l:1},
-        {nom:"Riz complet",qte:"100g cuit",kcal:130,p:3,g:28,l:1},
-        {nom:"Haricots verts",qte:"200g",kcal:50,p:3,g:8,l:0},
-      ]},
-      { nom:"Option D — Bowl protéiné", aliments:[
-        {nom:"Dinde hachée",qte:"150g",kcal:165,p:30,g:0,l:4},
-        {nom:"Lentilles corail",qte:"100g cuites",kcal:115,p:9,g:20,l:0},
-        {nom:"Épinards poêlés",qte:"150g",kcal:35,p:4,g:3,l:0},
-        {nom:"Huile de coco",qte:"½ c.à.s",kcal:45,p:0,g:0,l:5},
-      ]},
-    ]},
+const MEAL_SLOTS = [
+  { id:"matin",     label:"Petit-déjeuner", icon:"☀️", time:"07:00", color:"#D97706" },
+  { id:"midi",      label:"Déjeuner",       icon:"🥗", time:"12:30", color:"#EA580C" },
+  { id:"collation", label:"Collation",      icon:"⚡", time:"16:30", color:"#2563EB" },
+  { id:"soir",      label:"Dîner",          icon:"🌙", time:"20:00", color:"#7C3AED" },
+];
+
+// Helper: extract numeric base from qte string for scaling
+const parseBaseQte = (qteStr) => {
+  const m = qteStr.match(/([\d.]+)\s*(g|ml|kg|l|c\.à\.s|c\.à\.c)?/i);
+  if(m) return { val: parseFloat(m[1]), unit: m[2]||"" };
+  // count-based (e.g. "1 (60g)", "1 tranche (30g)")
+  const m2 = qteStr.match(/\(([\d.]+)g\)/);
+  if(m2) return { val: parseFloat(m2[1]), unit:"g", isCount:true };
+  return { val:1, unit:"pce" };
+};
+
+// MealCalculator component
+const MealCalculator = ({ slotId, color, items, setItems, onDone, done }) => {
+  const [search, setSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+
+  const filtered = search.length>=2 ? INGREDIENTS_DB.filter(i=>
+    i.nom.toLowerCase().includes(search.toLowerCase()) || i.cat.toLowerCase().includes(search.toLowerCase())
+  ).slice(0,8) : [];
+
+  const addItem = (ing) => {
+    const base = parseBaseQte(ing.qte);
+    const item = { ...ing, id: Date.now()+Math.random(), mult: 1, baseQte: base };
+    setItems(prev=>({...prev,[slotId]:[...(prev[slotId]||[]), item]}));
+    setSearch(""); setShowSearch(false);
+  };
+
+  const removeItem = (itemId) => {
+    setItems(prev=>({...prev,[slotId]:(prev[slotId]||[]).filter(i=>i.id!==itemId)}));
+  };
+
+  const updateMult = (itemId, mult) => {
+    setItems(prev=>({...prev,[slotId]:(prev[slotId]||[]).map(i=>i.id===itemId?{...i,mult:Math.max(0.25,mult)}:i)}));
+  };
+
+  const myItems = items[slotId] || [];
+  const tot = myItems.reduce((a,x)=>({
+    kcal:a.kcal+Math.round(x.kcal*x.mult),
+    p:a.p+Math.round(x.p*x.mult),
+    g:a.g+Math.round(x.g*x.mult),
+    l:a.l+Math.round(x.l*x.mult),
+  }),{kcal:0,p:0,g:0,l:0});
+
+  return(
+    <div>
+      {/* Items list */}
+      {myItems.length===0 ? (
+        <div style={{padding:"16px 0",textAlign:"center",color:C.faint,fontSize:12}}>
+          Aucun aliment ajouté · Clique sur + pour composer ton repas
+        </div>
+      ) : myItems.map((item,i) => {
+        const scaled = {
+          kcal:Math.round(item.kcal*item.mult), p:Math.round(item.p*item.mult),
+          g:Math.round(item.g*item.mult), l:Math.round(item.l*item.mult),
+        };
+        const qteDisplay = item.baseQte.unit==="pce"
+          ? `×${item.mult}`
+          : `${Math.round(item.baseQte.val*item.mult)}${item.baseQte.unit}`;
+        return(
+          <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:i<myItems.length-1?`1px solid ${C.border}`:"none"}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.nom}</div>
+              <div style={{fontSize:10,color:C.faint}}>{qteDisplay} · <span style={{color,fontWeight:600}}>{scaled.kcal} kcal</span></div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:4}}>
+              <button onClick={()=>updateMult(item.id, item.mult-0.25)} style={{width:22,height:22,borderRadius:6,border:`1px solid ${C.border}`,background:C.surface2,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12,fontWeight:700}}>−</button>
+              <span style={{fontSize:11,fontWeight:600,color:C.text,minWidth:28,textAlign:"center"}}>{item.mult}×</span>
+              <button onClick={()=>updateMult(item.id, item.mult+0.25)} style={{width:22,height:22,borderRadius:6,border:`1px solid ${C.border}`,background:C.surface2,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12,fontWeight:700}}>+</button>
+            </div>
+            <div style={{textAlign:"right",minWidth:40}}>
+              <div style={{fontSize:9,color:C.faint}}>P{scaled.p} G{scaled.g} L{scaled.l}</div>
+            </div>
+            <button onClick={()=>removeItem(item.id)} style={{background:"none",border:"none",color:C.faint,cursor:"pointer",fontSize:14,padding:"0 2px"}}>×</button>
+          </div>
+        );
+      })}
+
+      {/* Total for this meal */}
+      {myItems.length>0 && (
+        <div style={{display:"flex",gap:6,marginTop:8,padding:"8px 0",borderTop:`1px solid ${C.border}`}}>
+          {[{l:"Kcal",v:tot.kcal,c:C.warn},{l:"P",v:tot.p,c:C.nutri},{l:"G",v:tot.g,c:C.sport},{l:"L",v:tot.l,c:C.lecture}].map(m=>(
+            <div key={m.l} style={{flex:1,textAlign:"center"}}>
+              <div style={{fontSize:13,fontWeight:700,color:m.c}}>{m.v}</div>
+              <div style={{fontSize:9,color:C.faint}}>{m.l}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Search / Add */}
+      {showSearch ? (
+        <div style={{marginTop:8}}>
+          <div style={{position:"relative"}}>
+            <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:12,color:C.faint}}>🔍</span>
+            <input
+              autoFocus placeholder="Rechercher un ingrédient..."
+              value={search} onChange={e=>setSearch(e.target.value)}
+              style={{width:"100%",boxSizing:"border-box",background:C.surface2,border:`1px solid ${color}40`,borderRadius:10,padding:"9px 10px 9px 32px",color:C.text,fontFamily:"inherit",fontSize:12,outline:"none"}}
+            />
+            <button onClick={()=>{setShowSearch(false);setSearch("");}} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:C.faint,fontSize:14}}>×</button>
+          </div>
+          {filtered.length>0 && (
+            <div style={{marginTop:4,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden",maxHeight:200,overflowY:"auto"}}>
+              {filtered.map((ing,i)=>(
+                <button key={ing.nom+i} onClick={()=>addItem(ing)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",padding:"8px 12px",background:i%2===0?C.surface:C.surface2,border:"none",borderBottom:i<filtered.length-1?`1px solid ${C.border}`:"none",cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:500,color:C.text}}>{ing.nom}</div>
+                    <div style={{fontSize:10,color:C.faint}}>{ing.qte} · {ing.cat}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:11,fontWeight:600,color}}>{ing.kcal} kcal</div>
+                    <div style={{fontSize:9,color:C.faint}}>P{ing.p} G{ing.g} L{ing.l}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          {search.length>=2 && filtered.length===0 && (
+            <div style={{padding:"10px",textAlign:"center",color:C.faint,fontSize:11}}>Aucun résultat pour "{search}"</div>
+          )}
+        </div>
+      ) : (
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button onClick={()=>setShowSearch(true)} style={{flex:1,padding:"9px 0",background:`${color}10`,border:`1px solid ${color}30`,borderRadius:10,cursor:"pointer",color,fontFamily:"inherit",fontSize:12,fontWeight:600}}>+ Ajouter un aliment</button>
+          <button onClick={onDone} style={{width:36,height:36,borderRadius:10,background:done?color:C.surface2,border:`1px solid ${done?color:C.border}`,color:done?"#fff":C.faint,fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{done?"✓":"○"}</button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const MACRO_ROLES = [
@@ -985,7 +1005,7 @@ function App() {
   const [newSaving,setNewSaving]     = useState("");
   const [quote]                      = useState(QUOTES[Math.floor(Math.random()*QUOTES.length)]);
   const [nutriTab,setNutriTab]       = useState("plan");
-  const [selOpts,setSelOpts]         = useState({matin:0,midi:0,collation:0,soir:0});
+  const [mealItems,setMealItems]     = useState({matin:[],midi:[],collation:[],soir:[]});
   const [doneM,setDoneM]             = useState({});
   const [gymDay,setGymDay]           = useState(false);
   const [history,setHistory]             = useState([]);
@@ -997,14 +1017,14 @@ function App() {
 
   useEffect(()=>{
     (async()=>{
-      const [ch,wt,sw,sav,so,dm,lastWk,td,savedStreaks,yesterdayDone]=await Promise.all([
+      const [ch,wt,sw,sav,mi,dm,lastWk,td,savedStreaks,yesterdayDone]=await Promise.all([
         load(`${wk}_checks`,{}),load("weights",{}),load("startWeight",null),
-        load("savings",{target:500,saved:0}),load("selOpts",{matin:0,midi:0,collation:0,soir:0}),
+        load("savings",{target:500,saved:0}),load(`mealItems_${dk}`,{matin:[],midi:[],collation:[],soir:[]}),
         load(`doneM_${dk}`,{}),load("lastWeekKey",null),load("todos",[]),
         load("streaks",{}), load(`donePillars_${yk}`,{}),
       ]);
       setChecks(ch);setWeights(wt);setStartWeight(sw);
-      setSavings(sav);setSelOpts(so);setDoneM(dm);setTodos(td);
+      setSavings(sav);setMealItems(mi);setDoneM(dm);setTodos(td);
 
       // Recalcule les streaks au chargement
       // Si hier était complété pour un pilier → le streak continue, sinon reset
@@ -1066,7 +1086,7 @@ function App() {
   const setC  =setAndSave(setChecks,`${wk}_checks`);
   const setW  =setAndSave(setWeights,"weights");
   const setSv =setAndSave(setSavings,"savings");
-  const setSo =setAndSave(setSelOpts,"selOpts");
+  const setMi =setAndSave(setMealItems,`mealItems_${dk}`);
   const setDm =setAndSave(setDoneM,`doneM_${dk}`);
   const setSW =v=>{setStartWeight(v);persist([["startWeight",v]]);};
 
@@ -1100,11 +1120,10 @@ function App() {
   const getBestStreak = (pid) => streaks[pid]?.best || 0;
   const pillarOf=id=>PILLARS.find(p=>p.id===id);
   const sCol=s=>s>=80?C.good:s>=50?C.warn:s>=20?C.danger:C.faint;
-  const toggleOpt=key=>setSo(p=>({...p,[key]:(p[key]+1)%MEALS[key].options.length}));
-  const mealTot=key=>MEALS[key].options[selOpts[key]].aliments.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.p,g:a.g+x.g,l:a.l+x.l}),{kcal:0,p:0,g:0,l:0});
-  const dayTot=()=>{let r={kcal:0,p:0,g:0,l:0};Object.keys(MEALS).forEach(k=>{const t=mealTot(k);r.kcal+=t.kcal;r.p+=t.p;r.g+=t.g;r.l+=t.l;});if(gymDay){r.kcal+=150;r.g+=35;}return r;};
+  const mealTot=key=>(mealItems[key]||[]).reduce((a,x)=>({kcal:a.kcal+Math.round(x.kcal*x.mult),p:a.p+Math.round(x.p*x.mult),g:a.g+Math.round(x.g*x.mult),l:a.l+Math.round(x.l*x.mult)}),{kcal:0,p:0,g:0,l:0});
+  const dayTot=()=>{let r={kcal:0,p:0,g:0,l:0};MEAL_SLOTS.forEach(s=>{const t=mealTot(s.id);r.kcal+=t.kcal;r.p+=t.p;r.g+=t.g;r.l+=t.l;});if(gymDay){r.kcal+=150;r.g+=35;}return r;};
 
-  const gs=gScore(),dt=dayTot(),deficit=2300-dt.kcal;
+  const gs=gScore(),dt=dayTot(),tdee=gymDay?2500:2350,deficit=tdee-dt.kcal;
   const inputSt={flex:1,background:C.surface2,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontFamily:"inherit",fontSize:13,outline:"none"};
   const btnSt=color=>({background:color,border:"none",borderRadius:10,padding:"10px 18px",color:"#fff",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:12});
   const ghostBtn={background:"none",border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 14px",color:C.faint,cursor:"pointer",fontFamily:"inherit",fontSize:11};
@@ -1250,7 +1269,7 @@ function App() {
           <Card>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div>
-                <div style={{fontSize:11,color:C.faint,marginBottom:2}}>Objectif −1 kg / semaine</div>
+                <div style={{fontSize:11,color:C.faint,marginBottom:2}}>Objectif −0.8 kg / semaine · TDEE ≈ {tdee} kcal</div>
                 <div style={{fontSize:17,fontWeight:700}}>Plan du jour</div>
               </div>
               <button onClick={()=>setGymDay(g=>!g)} style={{background:gymDay?`${C.sport}15`:C.surface2,border:`1px solid ${gymDay?C.sport:C.border}`,borderRadius:20,padding:"7px 14px",color:gymDay?C.sport:C.muted,fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:11}}>{gymDay?"⚡ Salle +150":"Jour de salle ?"}</button>
@@ -1284,52 +1303,45 @@ function App() {
               <button key={t.id} onClick={()=>setNutriTab(t.id)} style={{flex:1,padding:"10px 0",background:nutriTab===t.id?C.nutri:C.surface,border:`1px solid ${nutriTab===t.id?C.nutri:C.border}`,borderRadius:10,color:nutriTab===t.id?"#fff":C.muted,fontFamily:"inherit",fontSize:11,fontWeight:600,cursor:"pointer",transition:"all 0.15s"}}>{t.label}</button>
             ))}
           </div>
-          {nutriTab==="plan"&&Object.entries(MEALS).map(([key,meal])=>{
-            const opts=meal.options, cur=selOpts[key], opt=opts[cur], mt=mealTot(key), done=doneM[key];
-            return(
-              <div key={key} style={{background:C.surface,border:`1px solid ${done?meal.color+"50":C.border}`,borderRadius:16,marginBottom:12,overflow:"hidden",opacity:done?0.6:1,transition:"all 0.2s"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 15px",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{fontSize:20}}>{meal.icon}</span>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                      <Tag color={meal.color}>{meal.label}</Tag>
-                      <span style={{fontSize:10,color:C.faint}}>{meal.time}</span>
-                    </div>
-                    <div style={{fontSize:11,color:C.muted}}>{mt.kcal} kcal · {mt.p}g prot</div>
-                  </div>
-                  <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                    {opts.length>1&&(
-                      <div style={{display:"flex",alignItems:"center",gap:4}}>
-                        <button onClick={()=>setSo(p=>({...p,[key]:(p[key]-1+opts.length)%opts.length}))} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12}}>‹</button>
-                        <span style={{fontSize:10,color:C.faint,minWidth:28,textAlign:"center"}}>{cur+1}/{opts.length}</span>
-                        <button onClick={()=>toggleOpt(key)} style={{background:C.surface2,border:`1px solid ${C.border}`,borderRadius:6,width:26,height:26,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontSize:12}}>›</button>
+          {nutriTab==="plan"&&(<>
+            {MEAL_SLOTS.map(meal=>{
+              const mt=mealTot(meal.id), done=doneM[meal.id], itemCount=(mealItems[meal.id]||[]).length;
+              return(
+                <div key={meal.id} style={{background:C.surface,border:`1px solid ${done?meal.color+"50":C.border}`,borderRadius:16,marginBottom:12,overflow:"hidden",opacity:done?0.7:1,transition:"all 0.2s"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 15px",borderBottom:`1px solid ${C.border}`}}>
+                    <span style={{fontSize:20}}>{meal.icon}</span>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                        <Tag color={meal.color}>{meal.label}</Tag>
+                        <span style={{fontSize:10,color:C.faint}}>{meal.time}</span>
                       </div>
-                    )}
-                    <button onClick={()=>setDm(p=>({...p,[key]:!p[key]}))} style={{width:32,height:32,borderRadius:8,background:done?meal.color:C.surface2,border:`1px solid ${done?meal.color:C.border}`,color:done?"#fff":C.faint,fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{done?"✓":"○"}</button>
-                  </div>
-                </div>
-                <div style={{padding:"7px 15px 5px",background:C.surface2,borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{fontSize:10,color:C.faint,fontStyle:"italic"}}>{opt.nom}</span>
-                </div>
-                {opt.aliments.map((a,i)=>(
-                  <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 15px",borderBottom:i<opt.aliments.length-1?`1px solid ${C.border}`:"none"}}>
-                    <div>
-                      <div style={{fontSize:13}}>{a.nom}</div>
-                      <div style={{fontSize:11,color:C.faint}}>{a.qte}</div>
-                    </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:13,fontWeight:600,color:meal.color}}>{a.kcal} kcal</div>
-                      <div style={{fontSize:10,color:C.faint}}>P{a.p} G{a.g} L{a.l}</div>
+                      <div style={{fontSize:11,color:C.muted}}>
+                        {itemCount>0 ? `${mt.kcal} kcal · ${mt.p}g prot · ${itemCount} aliment${itemCount>1?"s":""}` : "Aucun aliment"}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
+                  <div style={{padding:"4px 15px 12px"}}>
+                    <MealCalculator
+                      slotId={meal.id}
+                      color={meal.color}
+                      items={mealItems}
+                      setItems={fn=>setMi(prev=>{const next=typeof fn==="function"?fn(prev):fn;return next;})}
+                      onDone={()=>setDm(p=>({...p,[meal.id]:!p[meal.id]}))}
+                      done={done}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+            {/* Clear all meals button */}
+            <div style={{textAlign:"center",marginTop:4}}>
+              <button onClick={()=>setMi(()=>({matin:[],midi:[],collation:[],soir:[]}))} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 14px",color:C.faint,cursor:"pointer",fontFamily:"inherit",fontSize:11}}>↺ Réinitialiser tous les repas</button>
+            </div>
+          </>)}
           {nutriTab==="abaque"&&(
             <Card>
               <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>📊 Abaque nutritionnel</div>
-              <div style={{fontSize:11,color:C.faint,marginBottom:14}}>55 ingrédients · recherche + filtres + tri</div>
+              <div style={{fontSize:11,color:C.faint,marginBottom:14}}>{INGREDIENTS_DB.length} ingrédients · recherche + filtres + tri</div>
               <NutriAbaque/>
             </Card>
           )}
@@ -1541,8 +1553,7 @@ function App() {
   );
 }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
